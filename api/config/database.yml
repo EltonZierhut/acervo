@@ -15,6 +15,10 @@ test:
   <<: *default
   database: acervo_test
 
+# Produção usa só DATABASE_URL (no Cloud Run, vem do Secret Manager).
+# Não herda host/usuário/senha locais do bloco default.
 production:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   url: <%= ENV["DATABASE_URL"] %>

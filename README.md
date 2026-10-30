@@ -52,6 +52,25 @@ A senha é digitada sem aparecer na tela e precisa ter pelo menos 12 caracteres.
 - Depois de 10 tentativas de login em 3 minutos, as próximas são recusadas por alguns minutos.
 - **Produção:** defina a variável `SECRET_KEY_BASE` (gere com `bin/rails secret`). Ela assina o cookie de sessão.
 
+## Publicação
+
+O Acervo é publicado como um único serviço no **Google Cloud Run** (São Paulo), com banco no
+**Neon**. O `Dockerfile` da raiz compila o React e monta a imagem do Rails, que entrega a interface
+e a API no mesmo endereço.
+
+```bash
+bin/deploy-gcp     # publica (ou atualiza) o serviço
+```
+
+Passo a passo completo, incluindo contas, segredos e custos: [docs/deploy-gcp.md](docs/deploy-gcp.md).
+
+Para testar a imagem localmente:
+
+```bash
+docker build -t acervo .
+docker run --rm -p 8080:8080 -e DATABASE_URL=... -e SECRET_KEY_BASE=... acervo
+```
+
 ## Módulo Códigos
 
 - **Códigos (snippets):** título, linguagem, tags, descrição, o código em si e, opcionalmente, um projeto.
