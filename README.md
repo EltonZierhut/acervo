@@ -78,3 +78,22 @@ Exemplo: módulo `finance` (Finanças).
 2. Adicione-o à lista em `modules/index.ts`. O menu lateral e as rotas aparecem sozinhos.
 
 Código compartilhado fica em `api/app/models/concerns/` (busca, tags) e `web/src/core/` (cliente HTTP, hooks, layout).
+
+## Desenvolvimento assistido (Claude Code + Spec Kit)
+
+O projeto usa o [Spec Kit](https://github.com/github/spec-kit) para desenvolvimento guiado por especificações.
+
+- `CLAUDE.md`: comandos e convenções que o Claude Code segue.
+- `.specify/memory/constitution.md`: princípios do projeto (modularidade, busca, qualidade…).
+- `.claude/skills/`: comandos do Spec Kit.
+
+Fluxo para uma feature nova, dentro do Claude Code:
+
+```
+/speckit-specify Módulo de finanças com lançamentos e categorias
+/speckit-plan
+/speckit-tasks
+/speckit-implement
+```
+
+Opcionais: `/speckit-clarify` (antes do plano) e `/speckit-analyze` (antes de implementar).

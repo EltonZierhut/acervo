@@ -1,2 +1,5 @@
 node_modules/
 dist/
+
+# Claude Code (configurações locais de cada máquina)
+.claude/settings.local.json
