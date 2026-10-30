@@ -1,0 +1,6 @@
+shared:
+  modules:
+    - key: codes
+      name: Códigos
+      description: Códigos-fonte e informações de projetos, com busca
+      enabled: true

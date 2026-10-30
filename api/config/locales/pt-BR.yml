@@ -1,0 +1,27 @@
+pt-BR:
+  activerecord:
+    models:
+      codes/project: Projeto
+      codes/snippet: Código
+    attributes:
+      codes/project:
+        name: Nome
+        description: Descrição
+        repository_url: URL do repositório
+        tags: Tags
+      codes/snippet:
+        title: Título
+        description: Descrição
+        language: Linguagem
+        content: Código
+        tags: Tags
+        project: Projeto
+  errors:
+    format: "%{attribute} %{message}"
+    messages:
+      blank: não pode ficar em branco
+      taken: já está em uso
+      too_long: é muito longo (máximo %{count} caracteres)
+      invalid: não é válido
+      required: é obrigatório
+      inclusion: não está incluído na lista
