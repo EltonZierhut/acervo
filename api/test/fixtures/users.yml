@@ -1,0 +1,3 @@
+owner:
+  email_address: dono@acervo.test
+  password_digest: <%= BCrypt::Password.create(SignInHelper::TEST_PASSWORD) %>

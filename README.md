@@ -23,6 +23,7 @@ docker compose up -d
 cd api
 bundle install
 bin/rails db:create db:migrate db:seed
+bin/rails acervo:user:create      # cria a sua conta (pede e-mail e senha)
 bin/rails server
 
 # 3. Frontend: http://localhost:5173  (em outro terminal)
@@ -33,6 +34,23 @@ npm run dev
 
 O Vite encaminha `/api` para o Rails, então não precisa configurar nada em desenvolvimento.
 Usuário, senha e host do banco podem ser trocados por variáveis `DB_USER`, `DB_PASSWORD`, `DB_HOST`.
+
+Testes do backend: `cd api && bin/rails test`.
+
+## Acesso (login)
+
+Todo o Acervo exige login com e-mail e senha. Não há tela de cadastro: a conta é administrada pelo terminal, dentro de `api/`.
+
+```bash
+bin/rails acervo:user:create           # cria a conta (nesta versão, só uma)
+bin/rails acervo:user:reset_password   # define uma nova senha e encerra as sessões abertas
+```
+
+A senha é digitada sem aparecer na tela e precisa ter pelo menos 12 caracteres.
+
+- A sessão fica num cookie `HttpOnly` e vale até você sair ou ficar 30 dias sem usar.
+- Depois de 10 tentativas de login em 3 minutos, as próximas são recusadas por alguns minutos.
+- **Produção:** defina a variável `SECRET_KEY_BASE` (gere com `bin/rails secret`). Ela assina o cookie de sessão.
 
 ## Módulo Códigos
 
@@ -50,8 +68,13 @@ Também aceita a sintaxe de busca web: `"frase exata"`, `react -vue` (exclui), `
 
 ### Endpoints
 
+Todas exigem login, exceto `POST /api/v1/session` e `GET /up`. Requisições que alteram dados precisam de `Content-Type: application/json`.
+
 | Método | Rota | Uso |
 |---|---|---|
+| POST | `/api/v1/session` | Entrar (`email_address`, `password`) |
+| GET | `/api/v1/session` | Usuário logado |
+| DELETE | `/api/v1/session` | Sair |
 | GET | `/api/v1/modules` | Módulos habilitados |
 | GET | `/api/v1/codes/snippets?q=&language=&tag=&project_id=&page=` | Lista/busca códigos |
 | POST/PATCH/DELETE | `/api/v1/codes/snippets/:id` | CRUD de códigos |

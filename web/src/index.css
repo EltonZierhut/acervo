@@ -96,12 +96,29 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .error { color: var(--danger); margin: 0; }
 .empty { padding: 36px; text-align: center; color: var(--muted); border: 1px dashed var(--border); border-radius: var(--radius); }
 .pagination { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 18px; }
+.centered { text-align: center; padding: 48px 16px; }
+.notice { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: .9rem; }
+
+/* Conta na barra lateral */
+.account { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px 8px 0; border-top: 1px solid var(--border); }
+.account-email { font-size: .85rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.small-btn { font-size: .85rem; padding: 5px 10px; align-self: flex-start; }
+
+/* Tela de login */
+.login-page { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; }
+.login-card h1 { font-size: 1.5rem; }
+.login-card p { margin: 0; }
+.login-card label { display: flex; flex-direction: column; gap: 5px; font-weight: 500; font-size: .9rem; }
+.login-card .btn.primary { margin-top: 4px; padding: 10px 14px; }
 
 @media (max-width: 720px) {
   .shell { grid-template-columns: 1fr; }
   .sidebar { flex-direction: row; align-items: center; padding: 10px 14px; border-right: none; border-bottom: 1px solid var(--border); }
   .sidebar nav { flex-direction: row; }
   .sidebar-hint { display: none; }
+  .account { margin: 0 0 0 auto; flex-direction: row; align-items: center; padding: 0; border-top: none; min-width: 0; }
+  .account-email { display: none; }
   .content { padding: 18px 16px; }
   .filters { flex-wrap: wrap; }
   .form .row { grid-template-columns: 1fr; }

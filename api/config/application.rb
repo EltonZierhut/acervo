@@ -19,5 +19,8 @@ module Acervo
     # A coluna "searchable" (tsvector gerada) e a função auxiliar não
     # cabem no schema.rb, por isso o schema é salvo em SQL.
     config.active_record.schema_format = :sql
+
+    # Modo API não carrega cookies; a sessão de login usa um cookie assinado.
+    config.middleware.use ActionDispatch::Cookies
   end
 end

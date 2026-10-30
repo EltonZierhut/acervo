@@ -1,4 +1,15 @@
 class ApplicationController < ActionController::API
+  include ActionController::Cookies
+
+  WRITE_METHODS = %w[POST PUT PATCH DELETE].freeze
+
+  # Antes da autenticação: requisições que alteram dados só em JSON.
+  # Junto com o cookie SameSite=Lax, impede CSRF vindo de formulários de outros sites.
+  before_action :require_json_body
+
+  # Exige login em todas as ações (ver concerns/authentication.rb).
+  include Authentication
+
   rescue_from ActiveRecord::RecordNotFound do
     render json: { error: "Registro não encontrado" }, status: :not_found
   end
@@ -8,6 +19,13 @@ class ApplicationController < ActionController::API
   end
 
   private
+
+  def require_json_body
+    return unless WRITE_METHODS.include?(request.request_method)
+    return if request.media_type == "application/json"
+
+    render json: { error: "Use JSON (Content-Type: application/json)" }, status: :unsupported_media_type
+  end
 
   def render_errors(record)
     render json: { errors: record.errors.full_messages, fields: record.errors.to_hash }, status: :unprocessable_entity

@@ -22,6 +22,8 @@ bin/rails db:create db:migrate db:seed
 bin/rails server                     # http://localhost:3000
 bin/rails test                       # testes
 bin/rails db:migrate:redo            # confere se a migration é reversível
+bin/rails acervo:user:create         # cria a conta (interativo; só uma nesta versão)
+bin/rails acervo:user:reset_password # nova senha + encerra as sessões
 
 # Frontend (web/)
 npm install
@@ -45,6 +47,23 @@ npm run lint
   `include Searchable` com `searchable_partial_columns`. Em colunas geradas use
   `immutable_array_to_string` para arrays (já existe no banco).
 - **Schema** em SQL (`db/structure.sql`), não `schema.rb`.
+
+## Autenticação
+
+- Toda ação de controller exige login por padrão (`Authentication` incluído no
+  `ApplicationController`). Novos módulos já nascem protegidos; não adicione nada para isso.
+- Para liberar uma ação: `allow_unauthenticated_access only: :acao`. Só use com motivo explícito na spec.
+- Usuário e sessão da requisição: `Current.user` e `Current.session`.
+- Sessão em tabela `sessions`, identificada por token num cookie assinado `HttpOnly`/`SameSite=Lax`.
+  Nunca devolva o token no JSON nem guarde credenciais no JavaScript.
+- `POST/PUT/PATCH/DELETE` exigem `Content-Type: application/json` (proteção contra CSRF).
+- No frontend, use `useAuth()` de `web/src/core/auth-context.ts`. O cliente `core/api.ts` já leva ao
+  login quando a API responde 401.
+- Testes de request: chame `sign_in_as users(:owner)` no `setup`. O teste
+  `test/integration/authentication_required_test.rb` verifica automaticamente que toda rota nova
+  de `/api/v1` responde 401 sem login.
+- Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
+  feature de multiusuário.
 - Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
 ## Spec Kit
