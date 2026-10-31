@@ -1,10 +1,27 @@
-import { useEffect, useRef, useState } from 'react'
+import { Component, lazy, Suspense, useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { useBlocker } from 'react-router-dom'
 import { ApiError } from '../../../core/api'
 import { codesApi, LANGUAGES } from '../api'
 import type { Snippet, SnippetInput } from '../types'
 import { clearDraft, readDraft, useAutosave } from '../useAutosave'
 import { SaveStatus } from './SaveStatus'
+
+const CodeEditor = lazy(() => import('./CodeEditor'))
+
+// Se o editor não puder ser baixado (por exemplo, depois de um deploy), o resto da nota continua na tela.
+class EditorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false }
+
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+
+  render() {
+    if (this.state.failed) return <p className="error">Não foi possível carregar o editor. Recarregue a página.</p>
+    return this.props.children
+  }
+}
 
 const toInput = (note: Snippet | null): SnippetInput => ({
   title: note?.title ?? '',
@@ -32,7 +49,7 @@ export function NoteEditor({ note, onSaved, onDeleted }: Props) {
   const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle')
   const [confirming, setConfirming] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
-  const pasted = useRef(false)
+  const [editorKey, setEditorKey] = useState(0)
 
   const set = (key: keyof SnippetInput, value: string, immediate = false) =>
     setForm({ ...form, [key]: value }, immediate)
@@ -118,6 +135,7 @@ export function NoteEditor({ note, onSaved, onDeleted }: Props) {
             type="button"
             onClick={() => {
               setForm(draft, true)
+              setEditorKey((key) => key + 1)
               setDraft(null)
             }}
           >
@@ -162,22 +180,18 @@ export function NoteEditor({ note, onSaved, onDeleted }: Props) {
 
       {message && <p className="error">{message}</p>}
 
-      <textarea
-        className="code-input note-content"
-        aria-label="Conteúdo"
-        autoFocus
-        spellCheck={false}
-        wrap="off"
-        placeholder="Cole aqui o script ou a nota. O salvamento é automático."
-        value={form.content}
-        onPaste={() => {
-          pasted.current = true
-        }}
-        onChange={(e) => {
-          set('content', e.target.value, pasted.current)
-          pasted.current = false
-        }}
-      />
+      <EditorBoundary>
+        <Suspense fallback={<p className="muted">Carregando editor…</p>}>
+          <CodeEditor
+            key={editorKey}
+            initialValue={form.content}
+            language={form.language}
+            ariaLabel="Conteúdo"
+            placeholder="Cole aqui o script ou a nota. O salvamento é automático."
+            onChange={(value, pasted) => set('content', value, pasted)}
+          />
+        </Suspense>
+      </EditorBoundary>
 
       <details className="note-details">
         <summary>Mais detalhes</summary>
