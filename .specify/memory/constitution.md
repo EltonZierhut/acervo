@@ -1,5 +1,6 @@
 <!--
 Sync Impact Report
+- Versão: 1.0.2 → 1.1.0 (MINOR): nenhuma alteração entra na `main` sem branch e PR
 - Versão: 1.0.1 → 1.0.2 (PATCH): realce de código removido da stack, sem uso (feature 003)
 - Versão: 1.0.0 → 1.0.1 (PATCH): descrição do módulo Códigos, que deixou de ter projetos (feature 003)
 - Versão anterior: (template) → 1.0.0
@@ -91,11 +92,13 @@ Encontrar informação rapidamente é o propósito do Acervo.
 
 1. Toda feature nova passa pelo Spec Kit: `/speckit-specify` → (`/speckit-clarify`) →
    `/speckit-plan` → `/speckit-tasks` → (`/speckit-analyze`) → `/speckit-implement`.
-2. Correções pequenas e ajustes de texto ou estilo podem ser feitos direto, sem spec.
+2. Correções pequenas e ajustes de texto ou estilo podem ser feitos sem spec.
 3. Um módulo novo sempre começa com uma spec própria, descrevendo suas entidades e o que
    deve ser pesquisável.
 4. Cada feature é desenvolvida em uma branch própria (criada pelo `/speckit-specify`) e
    integrada à `main` depois de passar pelas verificações do princípio V.
+5. Nenhuma alteração é commitada ou enviada direto para a `main`, nem as pequenas: tudo vai em uma
+   branch própria e entra por pull request.
 
 ## Governança
 
@@ -106,4 +109,4 @@ Encontrar informação rapidamente é o propósito do Acervo.
   adicionar princípios ou seções, PATCH para esclarecimentos.
 - Orientações práticas do dia a dia ficam em `CLAUDE.md`.
 
-**Versão**: 1.0.2 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30
+**Versão**: 1.1.0 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30

@@ -83,8 +83,11 @@ bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-g
 - Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
   feature de multiusuário.
 
-## Pull requests
+## Branches e pull requests
 
+- **Nunca faça commit nem push direto na `main`**, nem em ajustes pequenos. Toda alteração vai em uma
+  branch própria e entra por PR. Antes de commitar, confira a branch atual com `git branch --show-current`.
+- Depois do merge de um PR, a branch dele acabou: atualize a `main` e crie outra para a próxima alteração.
 - A descrição de todo PR segue `.github/pull_request_template.md`, com as seções **Problema**,
   **Solução** e **Custo**. O `gh pr create --body-file` não aplica o template sozinho: preencha as
   três seções no texto enviado.
@@ -102,5 +105,5 @@ Fluxo para features novas (skills em `.claude/skills/`):
 5. `/speckit-analyze`: opcional, checa consistência entre spec, plano e tarefas
 6. `/speckit-implement`: executa as tarefas
 
-Ajustes pequenos podem ser feitos direto, sem spec. Antes de concluir uma tarefa, rode os
+Ajustes pequenos podem ser feitos sem spec, mas sempre em branch e por PR. Antes de concluir uma tarefa, rode os
 testes, o build e o lint da parte alterada.
