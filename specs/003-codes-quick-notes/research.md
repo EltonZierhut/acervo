@@ -25,19 +25,18 @@ Não restaram pontos em aberto. As decisões abaixo foram tomadas a partir do c�
   há alteração não salva.
 - **Alternativa**: salvar a cada tecla. Rejeitada pelo volume de requisições, sem ganho perceptível.
 
-## 3. Nota abre em modo de leitura
+## 3. Nota sempre editável
 
-- **Decisão**: nota existente abre com realce e botão de copiar; "Editar" troca para o editor. Nota
-  nova abre direto no editor, com foco no conteúdo.
-- **Motivo**: sem histórico e com salvamento automático, uma tecla acidental alteraria um script de
-  produção de forma definitiva.
-- **Alternativa**: sempre editável, como no Evernote. Rejeitada por esse risco.
+- **Decisão**: toda nota abre direto no editor, com foco no conteúdo e botões de copiar e apagar, por
+  pedido do usuário depois de experimentar a primeira versão.
+- **Risco aceito**: sem histórico e com salvamento automático, uma tecla acidental altera a nota de
+  forma definitiva.
+- **Alternativa**: modo de leitura com botão "Editar". Foi a primeira versão, removida por esse pedido.
 
 ## 4. Editor em `<textarea>`
 
-- **Decisão**: `textarea` monoespaçado na edição; realce do highlight.js só na leitura.
+- **Decisão**: `textarea` monoespaçado, sem realce. O highlight.js deixa de ser usado e sai das dependências.
 - **Motivo**: realce durante a edição exigiria uma dependência nova (princípio II).
-- **Limite**: acima de 100 KB, a leitura mostra texto sem realce, porque o `highlightAuto` trava a tela.
 
 ## 5. Limite de tamanho e erros do banco
 

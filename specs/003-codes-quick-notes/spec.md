@@ -57,8 +57,8 @@ o resultado e colar o conteúdo copiado em outro programa, conferindo que é id�
    recentemente alteradas para as mais antigas e o campo de busca já pronto para digitar.
 2. **Dado** que digito um trecho, **quando** ele existe no título, no conteúdo ou nas tags de uma
    nota, **então** a lista mostra essa nota sem que eu precise confirmar a busca.
-3. **Dado** que a lista mostra uma nota, **quando** a seleciono, **então** vejo o conteúdo completo
-   sem perder a lista de vista em telas largas.
+3. **Dado** que a lista mostra uma nota, **quando** a seleciono, **então** vejo o conteúdo completo,
+   já pronto para editar, sem perder a lista de vista em telas largas.
 4. **Dado** que estou vendo uma nota, **quando** aciono copiar, **então** todo o conteúdo vai para
    a área de transferência e recebo uma confirmação visual.
 5. **Dado** que a busca não encontra nada, **quando** a lista fica vazia, **então** vejo uma
@@ -146,9 +146,10 @@ aparecem como notas, com título, conteúdo e tags intactos.
   em telas estreitas, um de cada vez.
 - **FR-010**: O usuário DEVE poder copiar todo o conteúdo de uma nota com uma única ação, com
   confirmação visual.
-- **FR-011**: O conteúdo DEVE ser exibido em fonte monoespaçada, sem alterar o texto copiado. O
-  realce de sintaxe é aplicado quando a linguagem for informada ou puder ser detectada.
-- **FR-012**: O usuário DEVE poder editar e apagar notas; apagar exige confirmação.
+- **FR-011**: O conteúdo DEVE ser exibido em fonte monoespaçada, sem alterar o texto copiado. Não há
+  realce de sintaxe.
+- **FR-012**: A nota DEVE abrir sempre pronta para editar, sem botão de editar nem modo de leitura. O
+  usuário DEVE poder apagar notas; apagar exige confirmação.
 - **FR-013**: Criações e alterações DEVEM ser salvas automaticamente logo após colar, ao parar de
   digitar por um instante e ao sair da nota, sem botão de salvar. A tela DEVE indicar o estado
   ("salvando", "salvo", "não salvo") e avisar antes de sair se houver alteração que não pôde ser salva.
@@ -186,6 +187,7 @@ aparecem como notas, com título, conteúdo e tags intactos.
 - Continua sendo uso pessoal, com uma única conta. Compartilhar notas está fora do escopo.
 - O módulo continua se chamando "Códigos" na interface; "nota" é o nome de cada item.
 - Notas são texto puro: formatação rica, imagens e anexos (como no Evernote) estão fora do escopo.
+- A nota fica sempre editável, por decisão do usuário: o risco de alteração acidental é aceito.
 - Cadernos, pastas, favoritos e histórico de versões ficam fora desta feature. Sem histórico, uma
   alteração salva automaticamente não pode ser desfeita depois que a nota é fechada.
 - O Acervo não executa os scripts; apenas os guarda.

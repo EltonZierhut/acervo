@@ -1,5 +1,6 @@
 <!--
 Sync Impact Report
+- Versão: 1.0.1 → 1.0.2 (PATCH): realce de código removido da stack, sem uso (feature 003)
 - Versão: 1.0.0 → 1.0.1 (PATCH): descrição do módulo Códigos, que deixou de ter projetos (feature 003)
 - Versão anterior: (template) → 1.0.0
 - Princípios definidos: I. Modularidade, II. Simplicidade, III. Busca é recurso central,
@@ -80,7 +81,7 @@ Encontrar informação rapidamente é o propósito do Acervo.
 
 - Backend: Ruby 3.2+, Rails 8 em modo API, PostgreSQL 14+ (extensão `pg_trgm`).
   Schema salvo em SQL (`db/structure.sql`).
-- Frontend: React 19, TypeScript, Vite, React Router. Realce de código com highlight.js.
+- Frontend: React 19, TypeScript, Vite, React Router.
 - Datas e horários no fuso `America/Sao_Paulo`.
 - Uso pessoal: sem multiusuário por enquanto. Autenticação, quando entrar, será uma feature
   própria com spec.
@@ -105,4 +106,4 @@ Encontrar informação rapidamente é o propósito do Acervo.
   adicionar princípios ou seções, PATCH para esclarecimentos.
 - Orientações práticas do dia a dia ficam em `CLAUDE.md`.
 
-**Versão**: 1.0.1 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30
+**Versão**: 1.0.2 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30
