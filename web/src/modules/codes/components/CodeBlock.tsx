@@ -2,39 +2,49 @@ import hljs from 'highlight.js/lib/common'
 import 'highlight.js/styles/github-dark.css'
 import { useMemo, useState } from 'react'
 
+// Acima disso o realce automático trava a tela.
+const HIGHLIGHT_LIMIT = 100_000
+
 interface Props {
   code: string
   language?: string | null
-  maxLines?: number
-  copyable?: boolean
 }
 
-export function CodeBlock({ code, language, maxLines, copyable }: Props) {
-  const [copied, setCopied] = useState(false)
-  const visible = maxLines ? code.split('\n').slice(0, maxLines).join('\n') : code
+export function CodeBlock({ code, language }: Props) {
+  const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   const html = useMemo(() => {
+    if (code.length > HIGHLIGHT_LIMIT) return null
     if (language && hljs.getLanguage(language)) {
-      return hljs.highlight(visible, { language }).value
+      return hljs.highlight(code, { language }).value
     }
-    return hljs.highlightAuto(visible).value
-  }, [visible, language])
+    return hljs.highlightAuto(code).value
+  }, [code, language])
 
-  const copy = async () => {
-    await navigator.clipboard.writeText(code)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopy('copied')
+    } catch {
+      setCopy('failed')
+    }
+    setTimeout(() => setCopy('idle'), 4000)
   }
 
   return (
     <div className="code-block">
-      {copyable && (
-        <button type="button" className="copy-btn" onClick={copy}>
-          {copied ? 'Copiado!' : 'Copiar'}
-        </button>
+      <button type="button" className="copy-btn" onClick={() => void copyCode()}>
+        {copy === 'copied' ? 'Copiado!' : 'Copiar'}
+      </button>
+      {copy === 'failed' && (
+        <p className="error small">Não foi possível copiar. Selecione o texto manualmente.</p>
       )}
       <pre>
-        <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
+        {html === null ? (
+          <code className="hljs">{code}</code>
+        ) : (
+          <code className="hljs" dangerouslySetInnerHTML={{ __html: html }} />
+        )}
       </pre>
     </div>
   )

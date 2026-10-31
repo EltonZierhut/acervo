@@ -1,29 +1,16 @@
-export interface ProjectRef {
+export interface SnippetSummary {
   id: number
-  name: string
-}
-
-export interface Project extends ProjectRef {
-  description: string | null
-  repository_url: string | null
-  tags: string[]
-  snippets_count?: number
-  snippets?: Snippet[]
-  created_at: string
-  updated_at: string
-}
-
-export interface Snippet {
-  id: number
-  title: string
-  description: string | null
+  title: string | null
+  display_title: string
   language: string | null
-  content: string
   tags: string[]
-  project_id: number | null
-  project: ProjectRef | null
   created_at: string
   updated_at: string
+}
+
+export interface Snippet extends SnippetSummary {
+  content: string
+  description: string | null
 }
 
 export interface Paginated<T> {
@@ -31,8 +18,10 @@ export interface Paginated<T> {
   meta: { page: number; per_page: number; total: number; total_pages: number }
 }
 
-export type SnippetInput = Pick<Snippet, 'title' | 'description' | 'language' | 'content' | 'project_id'> & {
+export interface SnippetInput {
+  title: string
+  description: string
+  language: string
+  content: string
   tags: string
 }
-
-export type ProjectInput = Pick<Project, 'name' | 'description' | 'repository_url'> & { tags: string }

@@ -4,34 +4,37 @@ module Api
       class SnippetsController < ApplicationController
         before_action :set_snippet, only: %i[show update destroy]
 
-        def self.serialize(snippet)
-          snippet.as_json(only: %i[id title description language content tags project_id created_at updated_at])
-            .merge(project: snippet.project&.slice(:id, :name))
+        # Mesmo abaixo de 1 MB, um texto com muitas palavras diferentes estoura o índice de busca.
+        rescue_from ActiveRecord::StatementInvalid do |error|
+          raise error unless error.cause.is_a?(PG::ProgramLimitExceeded)
+
+          render json: { errors: [ "Conteúdo grande demais para ser pesquisável" ],
+                         fields: { content: [ "é grande demais para ser pesquisável" ] } },
+                 status: :unprocessable_entity
         end
 
-        # GET /api/v1/codes/snippets?q=termo&language=ruby&tag=rails&project_id=1&page=1
+        # GET /api/v1/codes/snippets?q=termo&language=ruby&tag=rails&page=1
         def index
-          scope = ::Codes::Snippet.includes(:project).order(updated_at: :desc)
+          scope = ::Codes::Snippet.order(updated_at: :desc)
           scope = scope.search(params[:q]) if params[:q].present?
           scope = scope.in_language(params[:language]) if params[:language].present?
           scope = scope.with_tag(params[:tag]) if params[:tag].present?
-          scope = scope.where(project_id: params[:project_id]) if params[:project_id].present?
 
           page = paginate(scope)
-          render json: { data: page[:records].map { |s| self.class.serialize(s) }, meta: page[:meta] }
+          render json: { data: page[:records].map { |s| serialize_summary(s) }, meta: page[:meta] }
         end
 
         def show
-          render json: self.class.serialize(@snippet)
+          render json: serialize(@snippet)
         end
 
         def create
           snippet = ::Codes::Snippet.new(snippet_params)
-          snippet.save ? render(json: self.class.serialize(snippet), status: :created) : render_errors(snippet)
+          snippet.save ? render(json: serialize(snippet), status: :created) : render_errors(snippet)
         end
 
         def update
-          @snippet.update(snippet_params) ? render(json: self.class.serialize(@snippet)) : render_errors(@snippet)
+          @snippet.update(snippet_params) ? render(json: serialize(@snippet)) : render_errors(@snippet)
         end
 
         def destroy
@@ -42,11 +45,21 @@ module Api
         private
 
         def set_snippet
-          @snippet = ::Codes::Snippet.includes(:project).find(params[:id])
+          @snippet = ::Codes::Snippet.find(params[:id])
         end
 
         def snippet_params
-          params.require(:snippet).permit(:title, :description, :language, :content, :project_id, :tags, tags: [])
+          params.require(:snippet).permit(:title, :description, :language, :content, :tags, tags: [])
+        end
+
+        # A listagem não traz o conteúdo: cada nota pode ter até 1 MB.
+        def serialize_summary(snippet)
+          snippet.as_json(only: %i[id title language tags created_at updated_at])
+            .merge(display_title: snippet.display_title)
+        end
+
+        def serialize(snippet)
+          serialize_summary(snippet).merge(snippet.as_json(only: %i[content description]))
         end
       end
     end

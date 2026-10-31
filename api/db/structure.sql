@@ -49,55 +49,20 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
--- Name: codes_projects; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.codes_projects (
-    id bigint NOT NULL,
-    name character varying NOT NULL,
-    description text,
-    repository_url character varying,
-    tags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
-    searchable tsvector GENERATED ALWAYS AS (((setweight(to_tsvector('simple'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(description, ''::text)), 'B'::"char"))) STORED,
-    created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
-);
-
-
---
--- Name: codes_projects_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE public.codes_projects_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: codes_projects_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE public.codes_projects_id_seq OWNED BY public.codes_projects.id;
-
-
---
 -- Name: codes_snippets; Type: TABLE; Schema: public; Owner: -
 --
 
 CREATE TABLE public.codes_snippets (
     id bigint NOT NULL,
-    project_id bigint,
-    title character varying NOT NULL,
+    title character varying,
     description text,
     language character varying,
     content text NOT NULL,
     tags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
     searchable tsvector GENERATED ALWAYS AS (((((setweight(to_tsvector('simple'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, (COALESCE(language, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(description, ''::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(content, ''::text)), 'C'::"char"))) STORED,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    tags_text text GENERATED ALWAYS AS (public.immutable_array_to_string((tags)::text[], ' '::text)) STORED
 );
 
 
@@ -197,13 +162,6 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
--- Name: codes_projects id; Type: DEFAULT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.codes_projects ALTER COLUMN id SET DEFAULT nextval('public.codes_projects_id_seq'::regclass);
-
-
---
 -- Name: codes_snippets id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -230,14 +188,6 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
-
-
---
--- Name: codes_projects codes_projects_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.codes_projects
-    ADD CONSTRAINT codes_projects_pkey PRIMARY KEY (id);
 
 
 --
@@ -273,31 +223,10 @@ ALTER TABLE ONLY public.users
 
 
 --
--- Name: index_codes_projects_on_name; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_codes_projects_on_name ON public.codes_projects USING btree (name);
-
-
---
--- Name: index_codes_projects_on_searchable; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_codes_projects_on_searchable ON public.codes_projects USING gin (searchable);
-
-
---
 -- Name: index_codes_snippets_on_content; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_codes_snippets_on_content ON public.codes_snippets USING gin (content public.gin_trgm_ops);
-
-
---
--- Name: index_codes_snippets_on_project_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_codes_snippets_on_project_id ON public.codes_snippets USING btree (project_id);
 
 
 --
@@ -351,20 +280,13 @@ ALTER TABLE ONLY public.sessions
 
 
 --
--- Name: codes_snippets fk_rails_807abc8039; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.codes_snippets
-    ADD CONSTRAINT fk_rails_807abc8039 FOREIGN KEY (project_id) REFERENCES public.codes_projects(id) ON DELETE SET NULL;
-
-
---
 -- PostgreSQL database dump complete
 --
 
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261030000004'),
 ('20261030000003'),
 ('20261030000002'),
 ('20261030000001');

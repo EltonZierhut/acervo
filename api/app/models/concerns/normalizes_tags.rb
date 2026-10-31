@@ -4,8 +4,12 @@ module NormalizesTags
 
   included do
     normalizes :tags, with: lambda { |value|
-      list = value.is_a?(String) ? value.split(",") : Array(value)
-      list.map { |tag| tag.to_s.strip.downcase }.reject(&:blank?).uniq
+      Array(value).map { |tag| tag.to_s.strip.downcase }.reject(&:blank?).uniq
     }
+  end
+
+  # O texto precisa ser separado antes da conversão do tipo array, que o leria como literal do Postgres.
+  def tags=(value)
+    super(value.is_a?(String) ? value.split(",") : Array(value))
   end
 end

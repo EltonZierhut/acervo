@@ -1,10 +1,4 @@
-acervo = Codes::Project.find_or_create_by!(name: "Acervo") do |p|
-  p.description = "Este projeto: Rails API + React, dividido em módulos."
-  p.tags = %w[rails react]
-end
-
 Codes::Snippet.find_or_create_by!(title: "Hook de debounce") do |s|
-  s.project = acervo
   s.language = "typescript"
   s.tags = %w[react hooks]
   s.description = "Atrasa a atualização de um valor, útil para campos de busca."
@@ -29,4 +23,4 @@ Codes::Snippet.find_or_create_by!(title: "Backup do PostgreSQL") do |s|
   s.content = "pg_dump -Fc acervo_development > backup_$(date +%F).dump"
 end
 
-puts "Seeds criados: #{Codes::Project.count} projeto(s), #{Codes::Snippet.count} código(s)."
+puts "Seeds criados: #{Codes::Snippet.count} nota(s)."

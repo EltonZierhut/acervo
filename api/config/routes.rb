@@ -9,9 +9,7 @@ Rails.application.routes.draw do
 
       # Módulo: Códigos
       namespace :codes do
-        resources :projects
         resources :snippets
-        get "search", to: "search#index"
       end
 
       # Próximos módulos entram aqui, cada um no seu namespace.

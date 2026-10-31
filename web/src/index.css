@@ -47,10 +47,6 @@ h2 { font-size: 1.2rem; margin: 0; }
 
 .page-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
 .page-header.section { margin-top: 32px; }
-.subnav { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
-.subnav a { padding: 8px 12px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.subnav a.active { color: var(--accent); border-color: var(--accent); }
-.subnav a:hover { text-decoration: none; color: var(--text); }
 .back { display: inline-block; margin-bottom: 10px; font-size: .9rem; }
 .actions { display: flex; gap: 8px; }
 
@@ -99,6 +95,31 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .centered { text-align: center; padding: 48px 16px; }
 .notice { margin: 0; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); font-size: .9rem; }
 
+/* Notas: lista e nota lado a lado */
+.content:has(.notes) { max-width: none; }
+.notes { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.notes-side { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; padding: 2px; }
+.notes-pane { min-width: 0; }
+.notes-back { display: none; }
+.note-list { display: flex; flex-direction: column; gap: 10px; }
+.note-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.note-item { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 8px; color: var(--text); min-width: 0; }
+.note-item:hover { background: var(--accent-soft); text-decoration: none; }
+.note-item.active { background: var(--accent-soft); }
+.note-item-title { font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note-item-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note-editor, .note-view { display: flex; flex-direction: column; gap: 10px; }
+.note-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.note-title { min-width: 0; overflow-wrap: anywhere; font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace; font-size: 1rem; }
+.note-view .actions { align-items: center; flex-wrap: wrap; }
+.note-content { min-height: 60vh; resize: vertical; overflow: auto; white-space: pre; }
+.note-banner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.note-banner span { flex: 1; min-width: 180px; }
+.note-banner .danger { color: var(--danger); }
+.save-status { font-size: .85rem; min-height: 1.3em; }
+.note-details summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+.note-details .form { max-width: none; margin-bottom: 0; }
+
 /* Conta na barra lateral */
 .account { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px 8px 0; border-top: 1px solid var(--border); }
 .account-email { font-size: .85rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -113,7 +134,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .login-card .btn.primary { margin-top: 4px; padding: 10px 14px; }
 
 @media (max-width: 720px) {
-  .shell { grid-template-columns: 1fr; }
+  .shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .sidebar { flex-direction: row; align-items: center; padding: 10px 14px; border-right: none; border-bottom: 1px solid var(--border); }
   .sidebar nav { flex-direction: row; }
   .sidebar-hint { display: none; }
@@ -122,4 +143,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
   .content { padding: 18px 16px; }
   .filters { flex-wrap: wrap; }
   .form .row { grid-template-columns: 1fr; }
+  .notes { grid-template-columns: minmax(0, 1fr); }
+  .notes-side { position: static; max-height: none; }
+  .notes.has-note .notes-side { display: none; }
+  .notes:not(.has-note) .notes-pane { display: none; }
+  .notes-back { display: inline-block; }
 }
