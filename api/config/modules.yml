@@ -4,3 +4,7 @@ shared:
       name: Códigos
       description: Notas e scripts para colar e encontrar rápido
       enabled: true
+    - key: initiatives
+      name: Iniciativas
+      description: Projetos de qualquer tipo, com marcos e tarefas
+      enabled: true

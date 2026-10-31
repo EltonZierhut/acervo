@@ -4,6 +4,10 @@ pt-BR:
       codes/project: Projeto
       codes/snippet: Código
       user: Usuário
+      initiatives/context: Contexto
+      initiatives/initiative: Iniciativa
+      initiatives/milestone: Marco
+      initiatives/task: Tarefa
     attributes:
       user:
         email_address: E-mail
@@ -14,6 +18,30 @@ pt-BR:
         description: Descrição
         repository_url: URL do repositório
         tags: Tags
+      initiatives/context:
+        name: Nome
+        color: Cor
+      initiatives/initiative:
+        name: Nome
+        description: Descrição
+        context_id: Contexto
+        status: Status
+        priority: Prioridade
+        starts_on: Data de início
+        due_on: Data-alvo
+        tags: Tags
+        sections: Seções
+      initiatives/milestone:
+        title: Título
+        description: Descrição
+        due_on: Data-alvo
+      initiatives/task:
+        title: Título
+        description: Descrição
+        status: Status
+        priority: Prioridade
+        due_on: Prazo
+        milestone_id: Marco
       codes/snippet:
         title: Título
         description: Descrição

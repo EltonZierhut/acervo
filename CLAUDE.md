@@ -1,7 +1,8 @@
 # Acervo
 
 Organizador pessoal modular. Backend Rails 8 API + PostgreSQL em `api/`, frontend React +
-TypeScript (Vite) em `web/`. Primeiro módulo: **Códigos** (notas e scripts para colar, com busca e salvamento automático).
+TypeScript (Vite) em `web/`. Módulos: **Códigos** (notas e scripts para colar, com busca e salvamento automático) e
+**Iniciativas** (projetos de qualquer tipo, com contextos, marcos e tarefas; spec 005).
 
 Princípios do projeto: `.specify/memory/constitution.md`. Leia antes de planejar ou implementar.
 

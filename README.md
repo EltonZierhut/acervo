@@ -2,7 +2,10 @@
 
 Organizador pessoal dividido em módulos. Backend em **Rails 8 (API)** com **PostgreSQL**, frontend em **React + TypeScript (Vite)**.
 
-Primeiro módulo: **Códigos**, um bloco de notas para colar scripts e trechos de código e encontrá-los rápido.
+Módulos:
+
+- **Códigos**: bloco de notas para colar scripts e trechos de código e encontrá-los rápido.
+- **Iniciativas**: projetos de qualquer tipo (trabalho, jogo, reforma…) com marcos e tarefas.
 
 ```
 acervo/
@@ -100,6 +103,24 @@ Todas exigem login, exceto `POST /api/v1/session` e `GET /up`. Requisições que
 | POST/PATCH/DELETE | `/api/v1/codes/snippets/:id` | Cria, altera e apaga notas |
 
 Tags podem ser enviadas como array (`["react","hooks"]`) ou texto (`"react, hooks"`).
+
+## Módulo Iniciativas
+
+Organiza qualquer coisa com objetivo e etapas: um projeto do trabalho, o desenvolvimento de um jogo,
+uma reforma. Fica em `/iniciativas`.
+
+- **Contextos**: áreas que você mesmo cria ("Trabalho", "Casa", "Jogo"), com cor, para filtrar a lista.
+- **Iniciativa**: nome (único campo obrigatório), descrição, status (ideia, planejada, ativa,
+  pausada, encerrada), prioridade, datas, tags e as **seções** que ela usa. Encerradas saem da
+  lista padrão, mas continuam no filtro.
+- **Tarefas**: criadas só com o título (Enter adiciona e já deixa o campo pronto para a próxima);
+  status, prioridade, prazo e marco são opcionais. Atrasadas aparecem destacadas.
+- **Marcos**: grandes entregas, com data-alvo e progresso das tarefas ligadas a eles.
+
+Busca por palavra e por pedaço em nome, descrição e tags das iniciativas, e em título e descrição
+das tarefas. Decisões, notas, ideias, documentos e riscos entram nas próximas fases
+(`specs/005-initiatives-module/spec.md`). Endpoints em
+[`specs/005-initiatives-module/contracts/initiatives-api.md`](specs/005-initiatives-module/contracts/initiatives-api.md).
 
 ## Como adicionar um módulo novo
 
