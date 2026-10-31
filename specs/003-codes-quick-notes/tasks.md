@@ -71,6 +71,11 @@
 - [X] T027 Rodar `bin/rails test`, `npm run build` e `npm run lint`
 - [X] T028 Validar no navegador os cenários de specs/003-codes-quick-notes/quickstart.md, incluindo logs e desempenho
 
+## Ajuste pós-implementação
+
+- [X] T029 Nota sempre editável: remover modo de leitura, botão "Editar", realce e filtro por tag da interface em web/src/modules/codes/, levando copiar e apagar para web/src/modules/codes/components/NoteEditor.tsx
+- [X] T030 Remover a dependência highlight.js de web/package.json e atualizar .specify/memory/constitution.md
+
 ## Dependências
 
 - A Fase 2 bloqueia todas as histórias.

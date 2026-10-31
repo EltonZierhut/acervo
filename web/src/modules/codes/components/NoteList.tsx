@@ -13,7 +13,6 @@ export function NoteList({ data, loading, error }: Props) {
   const [params, setParams] = useSearchParams()
   const [query, setQuery] = useState(params.get('q') ?? '')
   const debounced = useDebounce(query.trim(), 300)
-  const tag = params.get('tag') ?? ''
   const page = Number(params.get('page') ?? 1)
   const search = params.toString() ? `?${params}` : ''
 
@@ -34,7 +33,7 @@ export function NoteList({ data, loading, error }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced])
 
-  const filtered = Boolean(params.get('q') || tag)
+  const filtered = Boolean(params.get('q'))
 
   return (
     <div className="note-list">
@@ -47,7 +46,6 @@ export function NoteList({ data, loading, error }: Props) {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
-      {tag && <button className="chip" onClick={() => update('tag', '')}>#{tag} ✕</button>}
 
       {error && <p className="error">{error}</p>}
       {loading && !data && <p className="muted">Carregando…</p>}

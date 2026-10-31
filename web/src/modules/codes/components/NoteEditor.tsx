@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useBlocker } from 'react-router-dom'
-import { LANGUAGES } from '../api'
+import { ApiError } from '../../../core/api'
+import { codesApi, LANGUAGES } from '../api'
 import type { Snippet, SnippetInput } from '../types'
 import { clearDraft, readDraft, useAutosave } from '../useAutosave'
 import { SaveStatus } from './SaveStatus'
@@ -16,10 +17,10 @@ const toInput = (note: Snippet | null): SnippetInput => ({
 interface Props {
   note: Snippet | null
   onSaved: (note: Snippet) => void
-  onDone: (id: number | null) => void
+  onDeleted: () => void
 }
 
-export function NoteEditor({ note, onSaved, onDone }: Props) {
+export function NoteEditor({ note, onSaved, onDeleted }: Props) {
   const [initial] = useState(() => toInput(note))
   const { form, state, message, setForm, flush, abandon, hasUnsaved, noteId } = useAutosave({
     id: note?.id ?? null,
@@ -28,6 +29,9 @@ export function NoteEditor({ note, onSaved, onDone }: Props) {
   })
   const [draft, setDraft] = useState(() => readDraft(note?.id ?? null))
   const [flushFailed, setFlushFailed] = useState(false)
+  const [copy, setCopy] = useState<'idle' | 'copied' | 'failed'>('idle')
+  const [confirming, setConfirming] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const pasted = useRef(false)
 
   const set = (key: keyof SnippetInput, value: string, immediate = false) =>
@@ -59,10 +63,26 @@ export function NoteEditor({ note, onSaved, onDone }: Props) {
     return () => window.removeEventListener('beforeunload', warn)
   }, [flush, hasUnsaved])
 
-  const done = async () => {
-    if (await flush()) {
+  const copyContent = async () => {
+    try {
+      await navigator.clipboard.writeText(form.content)
+      setCopy('copied')
+    } catch {
+      setCopy('failed')
+    }
+    setTimeout(() => setCopy('idle'), 4000)
+  }
+
+  const remove = async () => {
+    const id = noteId()
+    if (!id) return
+    try {
+      await flush()
+      await codesApi.deleteSnippet(id)
       abandon()
-      onDone(noteId())
+      onDeleted()
+    } catch (err) {
+      setDeleteError(err instanceof ApiError ? err.message : 'Não foi possível apagar a nota.')
     }
   }
 
@@ -70,8 +90,26 @@ export function NoteEditor({ note, onSaved, onDone }: Props) {
     <div className="note-editor">
       <div className="note-toolbar">
         <SaveStatus state={state} />
-        <button type="button" onClick={() => void done()}>Concluir</button>
+        <div className="actions">
+          {confirming ? (
+            <>
+              <span className="small">Apagar esta nota?</span>
+              <button type="button" className="btn danger" onClick={() => void remove()}>Sim, apagar</button>
+              <button type="button" onClick={() => setConfirming(false)}>Cancelar</button>
+            </>
+          ) : (
+            <>
+              <button type="button" disabled={!form.content} onClick={() => void copyContent()}>
+                {copy === 'copied' ? 'Copiado!' : 'Copiar'}
+              </button>
+              {note && <button type="button" className="btn danger" onClick={() => setConfirming(true)}>Apagar</button>}
+            </>
+          )}
+        </div>
       </div>
+
+      {copy === 'failed' && <p className="error small">Não foi possível copiar. Selecione o texto manualmente.</p>}
+      {deleteError && <p className="error">{deleteError}</p>}
 
       {draft && (
         <div className="notice note-banner">

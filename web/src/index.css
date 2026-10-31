@@ -73,13 +73,6 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .description { margin: 4px 0; color: var(--muted); }
 .description.pre { white-space: pre-wrap; color: var(--text); }
 .clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-size: .8rem; color: var(--muted); }
-
-.code-block { position: relative; }
-.code-block pre { margin: 0; border-radius: 8px; overflow: auto; font-size: .85rem; }
-.code-block code.hljs { padding: 14px; display: block; font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace; }
-.copy-btn { position: absolute; top: 8px; right: 8px; font-size: .75rem; padding: 3px 10px; background: #2d333b; color: #e6edf3; border-color: #444c56; }
 
 .form { display: flex; flex-direction: column; gap: 14px; max-width: 760px; margin: 14px 0; }
 .form label { display: flex; flex-direction: column; gap: 5px; font-weight: 500; font-size: .9rem; }
@@ -108,10 +101,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .note-item.active { background: var(--accent-soft); }
 .note-item-title { font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace; font-size: .85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .note-item-meta { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.note-editor, .note-view { display: flex; flex-direction: column; gap: 10px; }
+.note-editor { display: flex; flex-direction: column; gap: 10px; }
 .note-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-.note-title { min-width: 0; overflow-wrap: anywhere; font-family: ui-monospace, 'JetBrains Mono', Menlo, monospace; font-size: 1rem; }
-.note-view .actions { align-items: center; flex-wrap: wrap; }
+.note-toolbar .actions { align-items: center; flex-wrap: wrap; }
 .note-content { min-height: 60vh; resize: vertical; overflow: auto; white-space: pre; }
 .note-banner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .note-banner span { flex: 1; min-width: 180px; }

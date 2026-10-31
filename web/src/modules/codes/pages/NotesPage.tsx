@@ -5,9 +5,7 @@ import { useAsync } from '../../../core/hooks'
 import { codesApi } from '../api'
 import { NoteEditor } from '../components/NoteEditor'
 import { NoteList } from '../components/NoteList'
-import { NoteView } from '../components/NoteView'
 import type { Snippet } from '../types'
-import { readDraft } from '../useAutosave'
 
 interface PaneProps {
   id: number | null
@@ -15,12 +13,10 @@ interface PaneProps {
   onChanged: () => void
   onCreated: (note: Snippet) => void
   onDeleted: () => void
-  onClosedEmpty: () => void
 }
 
-function NotePane({ id, backTo, onChanged, onCreated, onDeleted, onClosedEmpty }: PaneProps) {
+function NotePane({ id, backTo, onChanged, onCreated, onDeleted }: PaneProps) {
   const [note, setNote] = useState<Snippet | null>(null)
-  const [editing, setEditing] = useState(id === null)
   const [loadError, setLoadError] = useState<{ status: number; message: string } | null>(null)
   const invalidId = id !== null && !Number.isInteger(id)
 
@@ -31,9 +27,7 @@ function NotePane({ id, backTo, onChanged, onCreated, onDeleted, onClosedEmpty }
     codesApi
       .getSnippet(id)
       .then((loaded) => {
-        if (!active) return
-        setNote(loaded)
-        if (readDraft(id)) setEditing(true)
+        if (active) setNote(loaded)
       })
       .catch((err: Error) => {
         if (active) setLoadError({ status: err instanceof ApiError ? err.status : 0, message: err.message })
@@ -54,25 +48,20 @@ function NotePane({ id, backTo, onChanged, onCreated, onDeleted, onClosedEmpty }
   }
   if (loadError) return <p className="error">{loadError.message}</p>
 
-  if (editing) {
-    return (
-      <NoteEditor
-        note={note}
-        onSaved={(saved) => {
-          const created = !note
-          setNote(saved)
-          if (created) onCreated(saved)
-          onChanged()
-        }}
-        onDone={(savedId) => {
-          if (savedId) setEditing(false)
-          else onClosedEmpty()
-        }}
-      />
-    )
-  }
-  if (!note) return <p className="muted">Carregando…</p>
-  return <NoteView note={note} onEdit={() => setEditing(true)} onDeleted={onDeleted} />
+  if (id !== null && !note) return <p className="muted">Carregando…</p>
+
+  return (
+    <NoteEditor
+      note={note}
+      onSaved={(saved) => {
+        const created = !note
+        setNote(saved)
+        if (created) onCreated(saved)
+        onChanged()
+      }}
+      onDeleted={onDeleted}
+    />
+  )
 }
 
 export function NotesPage() {
@@ -92,11 +81,10 @@ export function NotesPage() {
   const paneKey = isNew ? `new-${newKey}` : created && created.id === routeId ? created.key : `note-${params.id}`
 
   const q = searchParams.get('q')
-  const tag = searchParams.get('tag')
   const page = searchParams.get('page')
   const list = useAsync(
-    () => codesApi.listSnippets({ q: q ?? undefined, tag: tag ?? undefined, page: Number(page ?? 1) }),
-    [q, tag, page],
+    () => codesApi.listSnippets({ q: q ?? undefined, page: Number(page ?? 1) }),
+    [q, page],
   )
   const reloadList = list.reload
   const onChanged = useCallback(() => void reloadList(), [reloadList])
@@ -133,7 +121,6 @@ export function NotesPage() {
               onChanged()
               navigate(backTo)
             }}
-            onClosedEmpty={() => navigate(backTo)}
           />
         ) : (
           <div className="empty">Selecione uma nota ou crie uma nova.</div>

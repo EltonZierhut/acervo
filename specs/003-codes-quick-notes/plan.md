@@ -16,7 +16,7 @@ linha do conteúdo quando ele falta.
 
 **Linguagem/versão**: Ruby 3.2+ com Rails 8 (API); TypeScript com React 19 e Vite
 
-**Dependências principais**: as já existentes (React Router 7, highlight.js). Nenhuma dependência nova.
+**Dependências principais**: as já existentes (React Router 7). Nenhuma dependência nova; o highlight.js é removido.
 
 **Armazenamento**: PostgreSQL 16, tabela `codes_snippets`; remoção de `codes_projects`
 
@@ -79,8 +79,7 @@ web/src/modules/codes/
 ├── index.tsx, api.ts, types.ts              # rota única; sem projetos
 ├── useAutosave.ts                           # fila de salvamento e estados
 ├── pages/NotesPage.tsx                      # substitui as páginas atuais
-├── components/{NoteList,NoteEditor,NoteView,SaveStatus}.tsx
-└── components/{CodeBlock,Tags}.tsx          # mantidos; CodeBlock ganha limites e erro ao copiar
+└── components/{NoteList,NoteEditor,SaveStatus}.tsx
 ```
 
 **Decisão de estrutura**: mantém os diretórios atuais. Saem `Project*Page`, `Snippet*Page` e `SubNav`.
@@ -90,8 +89,8 @@ web/src/modules/codes/
 - **Publicação apaga dados**: as migrations rodam ao subir a imagem, então o deploy apaga os projetos
   de produção assim que entrar. Se houver dados lá, é preciso exportá-los antes (ver `quickstart.md`).
 - **Vínculo perdido**: uma nota que pertencia a um projeto não guarda mais o nome dele.
-- **Alteração acidental**: sem histórico, o que for salvo substitui a versão anterior. Por isso a nota
-  abre em modo de leitura, e a edição exige uma ação (ver `research.md`, decisão 3).
+- **Alteração acidental**: sem histórico e com a nota sempre editável, o que for salvo substitui a versão
+  anterior. Risco aceito pelo usuário (ver `research.md`, decisão 3).
 
 ## Complexity Tracking
 
