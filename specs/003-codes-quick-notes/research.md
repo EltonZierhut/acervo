@@ -35,6 +35,8 @@ Não restaram pontos em aberto. As decisões abaixo foram tomadas a partir do c�
 
 ## 4. Editor em `<textarea>`
 
+> Substituída pela decisão de usar o CodeMirror: `specs/004-codes-codemirror/research.md`.
+
 - **Decisão**: `textarea` monoespaçado, sem realce. O highlight.js deixa de ser usado e sai das dependências.
 - **Motivo**: realce durante a edição exigiria uma dependência nova (princípio II).
 

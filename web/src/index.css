@@ -6,6 +6,15 @@
   --muted: #6b7380;
   --accent: #2f6fed;
   --accent-soft: #e8efff;
+  --syntax-keyword: #7c3aed;
+  --syntax-string: #0a7a3d;
+  --syntax-comment: #6b7380;
+  --syntax-number: #b35000;
+  --syntax-function: #1d5fd8;
+  --syntax-type: #0e7490;
+  --syntax-attribute: #a3356b;
+  --search-match: #fde68a;
+  --search-match-current: #fbbf24;
   --danger: #c93c3c;
   --radius: 10px;
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -23,6 +32,15 @@
     --muted: #8d95a1;
     --accent: #6d9cff;
     --accent-soft: #1f2a40;
+    --syntax-keyword: #c4a7ff;
+    --syntax-string: #7ee2a0;
+    --syntax-comment: #8d95a1;
+    --syntax-number: #ffb86b;
+    --syntax-function: #7fb0ff;
+    --syntax-type: #5fd3e6;
+    --syntax-attribute: #f5a3c7;
+    --search-match: #5c4a12;
+    --search-match-current: #8a6d14;
     --danger: #ff6b6b;
   }
 }
@@ -104,7 +122,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .note-editor { display: flex; flex-direction: column; gap: 10px; }
 .note-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
 .note-toolbar .actions { align-items: center; flex-wrap: wrap; }
-.note-content { min-height: 60vh; resize: vertical; overflow: auto; white-space: pre; }
+.note-content { height: 60vh; min-height: 60vh; resize: vertical; overflow: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.note-content:focus-within { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 .note-banner { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .note-banner span { flex: 1; min-width: 180px; }
 .note-banner .danger { color: var(--danger); }
