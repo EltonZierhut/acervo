@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       # Núcleo
+      resource :session, only: %i[create show destroy] # login, sessão atual, logout
       resources :modules, only: :index
 
       # Módulo: Códigos

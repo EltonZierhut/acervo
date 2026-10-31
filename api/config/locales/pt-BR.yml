@@ -3,7 +3,12 @@ pt-BR:
     models:
       codes/project: Projeto
       codes/snippet: Código
+      user: Usuário
     attributes:
+      user:
+        email_address: E-mail
+        password: Senha
+        password_confirmation: Confirmação da senha
       codes/project:
         name: Nome
         description: Descrição
@@ -22,6 +27,9 @@ pt-BR:
       blank: não pode ficar em branco
       taken: já está em uso
       too_long: é muito longo (máximo %{count} caracteres)
+      too_short: é muito curta (mínimo %{count} caracteres)
+      confirmation: não confere com %{attribute}
+      password_too_long: é muito longa
       invalid: não é válido
       required: é obrigatório
       inclusion: não está incluído na lista
