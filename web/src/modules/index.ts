@@ -1,6 +1,7 @@
 import { codesModule } from './codes'
+import { initiativesModule } from './initiatives'
 import type { OrganizerModule } from './types'
 
 // Para adicionar um módulo: crie src/modules/<nome>/index.tsx exportando
 // um OrganizerModule e coloque-o nesta lista.
-export const modules: OrganizerModule[] = [codesModule]
+export const modules: OrganizerModule[] = [codesModule, initiativesModule]
