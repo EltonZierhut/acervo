@@ -1,0 +1,32 @@
+# Ambiente de desenvolvimento: Rails e Vite no mesmo container, com o código montado de fora.
+# Usado pelo serviço `dev` do docker-compose.yml. A imagem de produção é o `Dockerfile`.
+FROM ruby:3.3.6-slim
+
+ARG NODE_MAJOR=22
+ARG UID=1000
+ARG GID=1000
+
+# O cliente do PostgreSQL precisa ser da mesma versão do servidor (16): o Rails usa
+# psql e pg_dump para ler e gravar db/structure.sql. Por isso vem do repositório PGDG.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      build-essential ca-certificates curl git libpq-dev libyaml-dev pkg-config postgresql-common xz-utils && \
+    /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y && \
+    apt-get install --no-install-recommends -y postgresql-client-16 && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN arch="$(dpkg --print-architecture | sed 's/amd64/x64/')" && \
+    version="$(curl -fsSL "https://nodejs.org/dist/latest-v${NODE_MAJOR}.x/SHASUMS256.txt" | grep -oE "node-v[0-9.]+-linux-${arch}\.tar\.xz" | head -1)" && \
+    curl -fsSL "https://nodejs.org/dist/latest-v${NODE_MAJOR}.x/${version}" | tar -xJ -C /usr/local --strip-components=1
+
+# Mesmo UID do usuário da máquina, para os arquivos gerados não ficarem como root.
+# As pastas abaixo recebem volumes, que herdam este dono na primeira criação.
+RUN groupadd --gid "${GID}" dev && \
+    useradd dev --uid "${UID}" --gid "${GID}" --create-home --shell /bin/bash && \
+    mkdir -p /app/web/node_modules && \
+    chown -R dev:dev /app /usr/local/bundle
+USER dev
+
+WORKDIR /app/api
+EXPOSE 3000 5173
+CMD ["/app/bin/dev"]

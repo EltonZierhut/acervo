@@ -11,16 +11,33 @@ Módulos:
 acervo/
 ├── api/                  # Rails API
 ├── web/                  # React + TypeScript
-└── docker-compose.yml    # PostgreSQL
+└── docker-compose.yml    # PostgreSQL, Rails e Vite para desenvolvimento
 ```
 
 ## Como rodar
+
+### Com Docker
+
+Requisito: só o Docker. O código fica montado no container, então as alterações valem na hora.
+
+```bash
+docker compose up -d                                  # sobe tudo: http://localhost:5173
+docker compose logs -f dev                            # acompanha a instalação e os servidores
+docker compose exec dev bin/rails acervo:user:create  # cria a sua conta (só na primeira vez)
+docker compose exec dev bin/rails test                # roda os testes
+docker compose down                                   # para tudo (os dados continuam no volume)
+```
+
+A primeira subida demora alguns minutos, porque instala as dependências. As portas 3000 e 5173 precisam
+estar livres; para usar outras: `API_PORT=3001 WEB_PORT=5174 docker compose up -d`.
+
+### Na máquina
 
 Requisitos: Ruby 3.2+, Node 20+ e PostgreSQL 14+ (ou Docker).
 
 ```bash
 # 1. Banco (pule se já tiver PostgreSQL rodando, usuário/senha postgres)
-docker compose up -d
+docker compose up -d db
 
 # 2. Backend: http://localhost:3000
 cd api

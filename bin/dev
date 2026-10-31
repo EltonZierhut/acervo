@@ -1,0 +1,29 @@
+#!/bin/bash
+# Comando do container de desenvolvimento (serviço `dev` do docker-compose.yml):
+# instala dependências, prepara o banco e sobe o Rails e o Vite juntos.
+set -euo pipefail
+
+until pg_isready -q -h "${DB_HOST}" -p "${DB_PORT}"; do
+  echo "Aguardando o PostgreSQL..."
+  sleep 1
+done
+
+cd /app/api
+bundle check >/dev/null || bundle install
+bin/rails db:prepare
+
+# Só reinstala quando o package-lock.json muda, para não atrasar cada subida.
+cd /app/web
+if ! cmp -s package-lock.json node_modules/.dev-installed-lock; then
+  npm ci --no-audit --no-fund
+  cp package-lock.json node_modules/.dev-installed-lock
+fi
+
+# O PID fica fora de api/tmp: assim, parar o container sem limpeza não trava a próxima subida.
+(cd /app/api && exec bin/rails server -b 0.0.0.0 -p 3000 -P /tmp/rails-server.pid) &
+(cd /app/web && exec npm run dev -- --host 0.0.0.0 --port 5173 --strictPort) &
+
+# Se um dos dois cair, o container termina em vez de ficar funcionando pela metade.
+trap 'kill $(jobs -p) 2>/dev/null || true' EXIT
+trap 'exit 0' INT TERM
+wait -n
