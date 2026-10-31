@@ -64,6 +64,7 @@ bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-g
   `include Searchable` com `searchable_partial_columns`. Em colunas geradas use
   `immutable_array_to_string` para arrays (já existe no banco).
 - **Schema** em SQL (`db/structure.sql`), não `schema.rb`.
+- Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
 ## Autenticação
 
@@ -81,7 +82,6 @@ bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-g
   de `/api/v1` responde 401 sem login.
 - Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
   feature de multiusuário.
-- Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
 ## Spec Kit
 
