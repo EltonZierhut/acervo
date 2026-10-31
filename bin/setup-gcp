@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+# Prepara o projeto do Google Cloud e o GitHub para publicar o Acervo. Basta rodar uma vez;
+# rodar de novo não duplica nada e não troca os segredos. Guia: docs/deploy-gcp.md
+#
+# Uso (na raiz do repositório, depois de `gcloud auth login` e `gh auth login`):
+#   GCP_PROJECT=meu-projeto bin/setup-gcp
+set -euo pipefail
+
+for tool in gcloud gh openssl; do
+  if ! command -v "$tool" >/dev/null; then
+    echo "'$tool' não está instalado. Veja o passo 2 de docs/deploy-gcp.md." >&2
+    exit 1
+  fi
+done
+
+if [ -z "$(gcloud auth list --filter=status:ACTIVE --format='value(account)')" ]; then
+  echo "Sem login no Google. Rode: gcloud auth login" >&2
+  exit 1
+fi
+
+REGION="${REGION:-southamerica-east1}"
+PROJECT="${GCP_PROJECT:-$(gcloud config get-value project 2>/dev/null)}"
+REPO="$(gh repo view --json nameWithOwner -q .nameWithOwner)"
+SQL_INSTANCE=acervo-db
+POOL=github
+PROVIDER=github
+
+if [ -z "$PROJECT" ]; then
+  echo "Projeto não definido. Use GCP_PROJECT=... bin/setup-gcp." >&2
+  exit 1
+fi
+
+RUNTIME_SA="acervo-runtime@${PROJECT}.iam.gserviceaccount.com"
+DEPLOYER_SA="acervo-deployer@${PROJECT}.iam.gserviceaccount.com"
+PROJECT_NUMBER="$(gcloud projects describe "$PROJECT" --format='value(projectNumber)')"
+
+gcloud config set project "$PROJECT" --quiet
+
+echo "==> Ativando as APIs"
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
+  sqladmin.googleapis.com secretmanager.googleapis.com iamcredentials.googleapis.com sts.googleapis.com
+
+echo "==> Repositório de imagens"
+gcloud artifacts repositories describe acervo --location "$REGION" >/dev/null 2>&1 ||
+  gcloud artifacts repositories create acervo --location "$REGION" --repository-format docker
+
+# Apaga imagens com mais de 30 dias, mantendo sempre as 5 mais recentes (para poder voltar versão).
+policy="$(mktemp)"
+trap 'rm -f "$policy"' EXIT
+cat >"$policy" <<'JSON'
+[
+  {"name": "manter-recentes", "action": {"type": "Keep"}, "mostRecentVersions": {"keepCount": 5}},
+  {"name": "apagar-antigas", "action": {"type": "Delete"}, "condition": {"tagState": "any", "olderThan": "30d"}}
+]
+JSON
+gcloud artifacts repositories set-cleanup-policies acervo --location "$REGION" \
+  --policy "$policy" --no-dry-run --quiet >/dev/null
+
+echo "==> Contas de serviço"
+for name in acervo-runtime acervo-deployer; do
+  gcloud iam service-accounts describe "${name}@${PROJECT}.iam.gserviceaccount.com" >/dev/null 2>&1 ||
+    gcloud iam service-accounts create "$name"
+done
+
+echo "==> Banco de dados (na primeira vez, a criação leva cerca de 10 minutos)"
+# Sem redes autorizadas: o único acesso é pelo conector do Cloud SQL, que exige permissão no Google.
+# A senha de root é descartada; o app e as tarefas usam o usuário acervo.
+gcloud sql instances describe "$SQL_INSTANCE" >/dev/null 2>&1 ||
+  gcloud sql instances create "$SQL_INSTANCE" \
+    --region "$REGION" \
+    --database-version POSTGRES_16 \
+    --edition enterprise \
+    --tier db-f1-micro \
+    --storage-type HDD \
+    --storage-size 10 \
+    --backup-start-time 06:00 \
+    --retained-backups-count 7 \
+    --ssl-mode ENCRYPTED_ONLY \
+    --deletion-protection \
+    --root-password "$(openssl rand -hex 32)"
+gcloud sql databases describe acervo --instance "$SQL_INSTANCE" >/dev/null 2>&1 ||
+  gcloud sql databases create acervo --instance "$SQL_INSTANCE"
+
+echo "==> Segredos"
+if ! gcloud secrets describe DATABASE_URL >/dev/null 2>&1; then
+  db_password="$(openssl rand -hex 32)"
+  if gcloud sql users list --instance "$SQL_INSTANCE" --format='value(name)' | grep -qx acervo; then
+    gcloud sql users set-password acervo --instance "$SQL_INSTANCE" --password "$db_password"
+  else
+    gcloud sql users create acervo --instance "$SQL_INSTANCE" --password "$db_password"
+  fi
+  # O "localhost" é só para o Rails aceitar a URL: o parâmetro host (o socket do Cloud SQL) tem prioridade.
+  printf '%s' "postgresql://acervo:${db_password}@localhost/acervo?host=/cloudsql/${PROJECT}:${REGION}:${SQL_INSTANCE}" |
+    gcloud secrets create DATABASE_URL --data-file=-
+  unset db_password
+fi
+gcloud secrets describe SECRET_KEY_BASE >/dev/null 2>&1 ||
+  openssl rand -hex 64 | tr -d '\n' | gcloud secrets create SECRET_KEY_BASE --data-file=-
+
+echo "==> Permissões"
+# O app só lê os dois segredos e se conecta ao banco.
+for secret in DATABASE_URL SECRET_KEY_BASE; do
+  gcloud secrets add-iam-policy-binding "$secret" --quiet --condition=None \
+    --member "serviceAccount:${RUNTIME_SA}" --role roles/secretmanager.secretAccessor >/dev/null
+done
+gcloud projects add-iam-policy-binding "$PROJECT" --quiet --condition=None \
+  --member "serviceAccount:${RUNTIME_SA}" --role roles/cloudsql.client >/dev/null
+# O deploy envia imagens, publica o serviço (run.admin, necessário para deixá-lo aberto à
+# internet) e faz o serviço rodar com a conta do app.
+gcloud artifacts repositories add-iam-policy-binding acervo --location "$REGION" --quiet --condition=None \
+  --member "serviceAccount:${DEPLOYER_SA}" --role roles/artifactregistry.writer >/dev/null
+gcloud projects add-iam-policy-binding "$PROJECT" --quiet --condition=None \
+  --member "serviceAccount:${DEPLOYER_SA}" --role roles/run.admin >/dev/null
+gcloud iam service-accounts add-iam-policy-binding "$RUNTIME_SA" --quiet --condition=None \
+  --member "serviceAccount:${DEPLOYER_SA}" --role roles/iam.serviceAccountUser >/dev/null
+
+echo "==> Login do GitHub no Google, restrito à main de ${REPO}"
+gcloud iam workload-identity-pools describe "$POOL" --location global >/dev/null 2>&1 ||
+  gcloud iam workload-identity-pools create "$POOL" --location global --display-name "GitHub Actions"
+gcloud iam workload-identity-pools providers describe "$PROVIDER" \
+  --location global --workload-identity-pool "$POOL" >/dev/null 2>&1 ||
+  gcloud iam workload-identity-pools providers create-oidc "$PROVIDER" \
+    --location global --workload-identity-pool "$POOL" \
+    --issuer-uri https://token.actions.githubusercontent.com \
+    --attribute-mapping 'google.subject=assertion.sub,attribute.repository=assertion.repository' \
+    --attribute-condition "assertion.repository == '${REPO}' && assertion.ref == 'refs/heads/main'"
+
+pool_path="projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/${POOL}"
+gcloud iam service-accounts add-iam-policy-binding "$DEPLOYER_SA" --quiet --condition=None \
+  --member "principalSet://iam.googleapis.com/${pool_path}/attribute.repository/${REPO}" \
+  --role roles/iam.workloadIdentityUser >/dev/null
+
+echo "==> Variáveis do repositório no GitHub"
+gh variable set GCP_PROJECT_ID --repo "$REPO" --body "$PROJECT"
+gh variable set GCP_WORKLOAD_IDENTITY_PROVIDER --repo "$REPO" --body "${pool_path}/providers/${PROVIDER}"
+gh variable set GCP_DEPLOYER_SERVICE_ACCOUNT --repo "$REPO" --body "$DEPLOYER_SA"
+
+echo
+echo "Pronto. Para publicar a main agora: gh workflow run deploy.yml --ref main"

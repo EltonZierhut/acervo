@@ -75,11 +75,15 @@ A senha é digitada sem aparecer na tela e precisa ter pelo menos 12 caracteres.
 ## Publicação
 
 O Acervo é publicado como um único serviço no **Google Cloud Run** (São Paulo), com banco no
-**Neon**. O `Dockerfile` da raiz compila o React e monta a imagem do Rails, que entrega a interface
+**Cloud SQL**, que tem custo mensal fixo. O `Dockerfile` da raiz compila o React e monta a imagem do Rails, que entrega a interface
 e a API no mesmo endereço.
 
+Depois de configurado, cada merge na `main` é publicado pelo GitHub Actions, se os testes passarem.
+
 ```bash
-bin/deploy-gcp     # publica (ou atualiza) o serviço
+bin/setup-gcp      # configura Google Cloud e GitHub (uma vez)
+bin/deploy-gcp     # publica da sua máquina, sem o GitHub Actions
+bin/prod-rails acervo:user:create   # roda uma tarefa do Rails no banco de produção
 ```
 
 Passo a passo completo, incluindo contas, segredos e custos: [docs/deploy-gcp.md](docs/deploy-gcp.md).

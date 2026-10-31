@@ -19,8 +19,9 @@ WORKDIR /rails
 ENV RAILS_ENV=production \
     BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_WITHOUT=development:test
+# postgresql-client: com o banco vazio, o db:migrate carrega db/structure.sql usando o psql.
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y libpq5 curl && \
+    apt-get install --no-install-recommends -y libpq5 curl postgresql-client && \
     rm -rf /var/lib/apt/lists/*
 
 # ---------- 2. Gems ----------

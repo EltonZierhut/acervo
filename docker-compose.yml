@@ -31,6 +31,17 @@ services:
       - bundle:/usr/local/bundle
       - node_modules:/app/web/node_modules
 
+  # Acesso ao banco de produção. Não sobe com o `up`; é usado só pelo bin/prod-rails.
+  prod-sql-proxy:
+    profiles: [prod-sql]
+    image: gcr.io/cloud-sql-connectors/cloud-sql-proxy:2
+    user: "${PROXY_UID:-1000}"
+    command: ["--address", "0.0.0.0", "--port", "5432", "${CLOUD_SQL_INSTANCE:-}"]
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /adc.json
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/adc.json:ro
+
 volumes:
   pgdata:
   bundle:

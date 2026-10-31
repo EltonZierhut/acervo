@@ -36,11 +36,16 @@ npm run lint
 
 # Produção (raiz)
 docker build -t acervo .             # imagem única: React compilado + Rails
-bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-gcp.md)
+bin/setup-gcp                        # configura Google Cloud e GitHub (uma vez; guia: docs/deploy-gcp.md)
+bin/deploy-gcp                       # publica no Cloud Run à mão (o normal é pelo merge na main)
+bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (Cloud SQL, pelo proxy)
 ```
 
 ## Produção
 
+- Todo merge na `main` é publicado em produção: `.github/workflows/deploy.yml` roda o CI
+  (`ci.yml`, também em cada PR) e depois o `bin/deploy-gcp`. Por isso, migrations precisam funcionar
+  com a versão anterior do código enquanto a troca acontece.
 - Uma imagem (`Dockerfile` na raiz) com API e interface. O build do React é dividido:
   `assets/` vai para `api/public/assets/` e o `index.html` para `api/frontend/` (fora de
   `public/`, para não ser servido com cache longo). Os dois são gerados no build e ignorados no Git.
