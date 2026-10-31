@@ -14,8 +14,10 @@ Princípios do projeto: `.specify/memory/constitution.md`. Leia antes de planeja
 ## Comandos
 
 ```bash
-# Banco
-docker compose up -d                 # PostgreSQL (postgres/postgres)
+# Docker (desenvolvimento)
+docker compose up -d                 # tudo: PostgreSQL + Rails e Vite em um container (:3000 e :5173)
+docker compose up -d db              # só o PostgreSQL (postgres/postgres), para rodar o resto na máquina
+docker compose exec dev bin/rails test  # comandos do Rails dentro do container
 
 # Backend (api/)
 bundle install
