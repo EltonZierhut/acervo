@@ -17,7 +17,7 @@ class AuthenticationRequiredTest < ActionDispatch::IntegrationTest
   end
 
   test "existem rotas de dados para verificar" do
-    assert_operator api_routes.size, :>=, 10
+    assert_operator api_routes.size, :>=, 5
   end
 
   test "todas as rotas /api/v1 respondem 401 sem login" do

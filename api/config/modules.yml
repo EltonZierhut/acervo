@@ -2,5 +2,5 @@ shared:
   modules:
     - key: codes
       name: Códigos
-      description: Códigos-fonte e informações de projetos, com busca
+      description: Notas e scripts para colar e encontrar rápido
       enabled: true

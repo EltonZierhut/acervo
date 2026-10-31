@@ -1,6 +1,7 @@
 <!--
 Sync Impact Report
-- Versão: (template) → 1.0.0
+- Versão: 1.0.0 → 1.0.1 (PATCH): descrição do módulo Códigos, que deixou de ter projetos (feature 003)
+- Versão anterior: (template) → 1.0.0
 - Princípios definidos: I. Modularidade, II. Simplicidade, III. Busca é recurso central,
   IV. Contrato de API estável, V. Qualidade verificável, VI. Idioma e consistência
 - Seções adicionadas: Restrições técnicas, Fluxo de desenvolvimento, Governança
@@ -11,7 +12,7 @@ Sync Impact Report
 # Constituição do Acervo
 
 O Acervo é um organizador pessoal dividido em módulos. Cada módulo organiza uma área da
-vida do usuário (o primeiro é **Códigos**: trechos de código e informações de projetos,
+vida do usuário (o primeiro é **Códigos**: notas e scripts para colar,
 com busca). Novos módulos são adicionados ao longo do tempo.
 
 ## Princípios
@@ -104,4 +105,4 @@ Encontrar informação rapidamente é o propósito do Acervo.
   adicionar princípios ou seções, PATCH para esclarecimentos.
 - Orientações práticas do dia a dia ficam em `CLAUDE.md`.
 
-**Versão**: 1.0.0 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30
+**Versão**: 1.0.1 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-10-30

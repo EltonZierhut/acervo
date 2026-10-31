@@ -2,7 +2,7 @@
 
 Organizador pessoal dividido em módulos. Backend em **Rails 8 (API)** com **PostgreSQL**, frontend em **React + TypeScript (Vite)**.
 
-Primeiro módulo: **Códigos**, para guardar trechos de código e informações de projetos, com busca por termos.
+Primeiro módulo: **Códigos**, um bloco de notas para colar scripts e trechos de código e encontrá-los rápido.
 
 ```
 acervo/
@@ -73,15 +73,15 @@ docker run --rm -p 8080:8080 -e DATABASE_URL=... -e SECRET_KEY_BASE=... acervo
 
 ## Módulo Códigos
 
-- **Códigos (snippets):** título, linguagem, tags, descrição, o código em si e, opcionalmente, um projeto.
-- **Projetos:** nome, URL do repositório, tags e descrição/anotações livres.
+- **Notas (snippets):** basta colar o conteúdo, e a nota é salva automaticamente. Título, tags, linguagem e descrição são opcionais; sem título, a lista mostra a primeira linha.
+- O conteúdo fica em texto legível no banco e na tela: não guarde senhas nem chaves nas notas.
 
 ### Busca
 
-Uma busca procura em título, tags, linguagem, descrição e conteúdo do código, de duas formas ao mesmo tempo:
+Uma busca procura em título, tags, linguagem, descrição e conteúdo da nota, de duas formas ao mesmo tempo:
 
 - **Palavras inteiras** (full-text do PostgreSQL), ordenadas por relevância: título e tags pesam mais que o corpo do código.
-- **Pedaços de texto** (`ILIKE` com índice de trigramas): `useDeb` encontra `useDebounce`.
+- **Pedaços de texto** (`ILIKE`) em título, tags, descrição e conteúdo: `useDeb` encontra `useDebounce`.
 
 Também aceita a sintaxe de busca web: `"frase exata"`, `react -vue` (exclui), `rails or django`.
 
@@ -95,12 +95,9 @@ Todas exigem login, exceto `POST /api/v1/session` e `GET /up`. Requisições que
 | GET | `/api/v1/session` | Usuário logado |
 | DELETE | `/api/v1/session` | Sair |
 | GET | `/api/v1/modules` | Módulos habilitados |
-| GET | `/api/v1/codes/snippets?q=&language=&tag=&project_id=&page=` | Lista/busca códigos |
-| POST/PATCH/DELETE | `/api/v1/codes/snippets/:id` | CRUD de códigos |
-| GET | `/api/v1/codes/projects?q=` | Lista/busca projetos |
-| GET | `/api/v1/codes/projects/:id` | Projeto com seus códigos |
-| POST/PATCH/DELETE | `/api/v1/codes/projects/:id` | CRUD de projetos |
-| GET | `/api/v1/codes/search?q=` | Busca em projetos e códigos de uma vez |
+| GET | `/api/v1/codes/snippets?q=&language=&tag=&page=` | Lista/busca notas (sem o conteúdo) |
+| GET | `/api/v1/codes/snippets/:id` | Nota completa |
+| POST/PATCH/DELETE | `/api/v1/codes/snippets/:id` | Cria, altera e apaga notas |
 
 Tags podem ser enviadas como array (`["react","hooks"]`) ou texto (`"react, hooks"`).
 

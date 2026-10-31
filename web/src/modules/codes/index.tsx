@@ -1,21 +1,11 @@
 import type { OrganizerModule } from '../types'
-import { ProjectDetailPage } from './pages/ProjectDetailPage'
-import { ProjectsPage } from './pages/ProjectsPage'
-import { SnippetDetailPage } from './pages/SnippetDetailPage'
-import { SnippetFormPage } from './pages/SnippetFormPage'
-import { SnippetsPage } from './pages/SnippetsPage'
+import { NotesPage } from './pages/NotesPage'
 
 export const codesModule: OrganizerModule = {
   key: 'codes',
   name: 'Códigos',
   icon: '</>',
   path: '/codigos',
-  routes: [
-    { index: true, element: <SnippetsPage /> },
-    { path: 'novo', element: <SnippetFormPage /> },
-    { path: 'projetos', element: <ProjectsPage /> },
-    { path: 'projetos/:id', element: <ProjectDetailPage /> },
-    { path: ':id', element: <SnippetDetailPage /> },
-    { path: ':id/editar', element: <SnippetFormPage /> },
-  ],
+  // Rota única: ao criar, a URL vai de /codigos/novo para /codigos/:id sem desmontar o editor.
+  routes: [{ path: ':id?', element: <NotesPage /> }],
 }
