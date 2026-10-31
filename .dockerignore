@@ -1,0 +1,23 @@
+# Git e ferramentas locais
+.git
+.claude/
+.specify/
+specs/
+docker-compose.yml
+
+# Dependências e builds (são refeitos dentro da imagem)
+**/node_modules
+**/dist
+api/frontend
+api/public/assets
+
+# Logs e temporários
+api/log/*
+api/tmp/*
+!api/log/.keep
+!api/tmp/.keep
+
+# Segredos
+.env*
+**/.env*
+api/config/master.key

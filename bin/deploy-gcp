@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Publica o Acervo no Google Cloud Run (região São Paulo).
+# Guia completo: docs/deploy-gcp.md
+#
+# Uso (na raiz do repositório):
+#   bin/deploy-gcp
+# Variáveis opcionais:
+#   GCP_PROJECT  projeto do Google Cloud (padrão: o configurado no gcloud)
+#   SERVICE      nome do serviço (padrão: acervo)
+#   REGION       região (padrão: southamerica-east1, São Paulo)
+set -euo pipefail
+
+SERVICE="${SERVICE:-acervo}"
+REGION="${REGION:-southamerica-east1}"
+
+if [ ! -f Dockerfile ] || [ ! -d api ] || [ ! -d web ]; then
+  echo "Execute na raiz do repositório do Acervo (onde ficam Dockerfile, api/ e web/)." >&2
+  exit 1
+fi
+
+if [ ! -f api/Gemfile.lock ]; then
+  echo "api/Gemfile.lock não encontrado. Rode 'cd api && bundle install', versione o arquivo e tente de novo." >&2
+  echo "Detalhes em docs/deploy-gcp.md (pré-requisitos)." >&2
+  exit 1
+fi
+
+project_args=()
+if [ -n "${GCP_PROJECT:-}" ]; then
+  project_args=(--project "$GCP_PROJECT")
+fi
+
+# --max-instances 1: o limite de tentativas de login usa memória local (uma instância só).
+# --min-instances 0: desliga quando não está em uso (sem cobrança parada).
+# (A forma ${arr[@]+...} evita erro com array vazio no bash 3.2 do macOS.)
+gcloud run deploy "$SERVICE" ${project_args[@]+"${project_args[@]}"} \
+  --source . \
+  --region "$REGION" \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 512Mi \
+  --cpu 1 \
+  --min-instances 0 \
+  --max-instances 1 \
+  --set-secrets DATABASE_URL=DATABASE_URL:latest,SECRET_KEY_BASE=SECRET_KEY_BASE:latest

@@ -30,7 +30,24 @@ npm install
 npm run dev                          # http://localhost:5173 (proxy /api → :3000)
 npm run build                        # checa tipos + build
 npm run lint
+
+# Produção (raiz)
+docker build -t acervo .             # imagem única: React compilado + Rails
+bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-gcp.md)
 ```
+
+## Produção
+
+- Uma imagem (`Dockerfile` na raiz) com API e interface. O build do React é dividido:
+  `assets/` vai para `api/public/assets/` e o `index.html` para `api/frontend/` (fora de
+  `public/`, para não ser servido com cache longo). Os dois são gerados no build e ignorados no Git.
+- `SpaController` + a rota catch-all (última do `routes.rb`) entregam o `index.html` em qualquer
+  navegação que aceite HTML. **Rotas do frontend não podem começar com `/api`, `/up` ou `/assets`.**
+- Credenciais só por ambiente (`DATABASE_URL`, `SECRET_KEY_BASE`, vindas do Secret Manager); o
+  initializer `require_production_env.rb` aborta se faltarem.
+- O serviço roda com **uma instância e um processo** (o `rate_limit` usa cache em memória). Não
+  adicione `workers` ao Puma nem aumente `--max-instances` sem trocar o cache por um compartilhado.
+- Migrations rodam no `api/bin/docker-entrypoint` antes de o servidor subir.
 
 ## Estrutura e convenções
 
@@ -47,6 +64,7 @@ npm run lint
   `include Searchable` com `searchable_partial_columns`. Em colunas geradas use
   `immutable_array_to_string` para arrays (já existe no banco).
 - **Schema** em SQL (`db/structure.sql`), não `schema.rb`.
+- Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
 ## Autenticação
 
@@ -64,7 +82,6 @@ npm run lint
   de `/api/v1` responde 401 sem login.
 - Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
   feature de multiusuário.
-- Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
 ## Spec Kit
 

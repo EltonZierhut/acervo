@@ -1,0 +1,13 @@
+#!/bin/bash
+# Ponto de entrada da imagem. Antes de subir o servidor, aplica as migrations
+# pendentes; se falharem, o container termina e o serviço não passa a atender.
+set -e
+
+if [ "${@: -2:1}" == "./bin/rails" ] || [ "${@: -2:1}" == "bin/rails" ]; then
+  if [ "${@: -1:1}" == "server" ]; then
+    echo "Aplicando migrations pendentes..."
+    ./bin/rails db:migrate
+  fi
+fi
+
+exec "${@}"

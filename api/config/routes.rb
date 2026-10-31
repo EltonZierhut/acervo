@@ -17,4 +17,10 @@ Rails.application.routes.draw do
       # Próximos módulos entram aqui, cada um no seu namespace.
     end
   end
+
+  # Interface (SPA). O catch-all precisa ser a ÚLTIMA rota: qualquer navegação que aceite
+  # HTML e não seja da API, do health check ou de assets recebe o index.html do React.
+  root "spa#index"
+  get "*path", to: "spa#index", format: false,
+    constraints: ->(request) { request.format.html? && !request.path.start_with?("/api", "/up", "/assets") }
 end

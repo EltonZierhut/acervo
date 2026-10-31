@@ -1,5 +1,12 @@
 node_modules/
 dist/
 
+# Build do React copiado para o Rails (gerado na imagem Docker)
+api/frontend/
+api/public/assets/
+
+# Segredos locais
+.env*
+
 # Claude Code (configurações locais de cada máquina)
 .claude/settings.local.json
