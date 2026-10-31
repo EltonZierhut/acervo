@@ -83,6 +83,14 @@ bin/deploy-gcp                       # publica no Cloud Run (guia: docs/deploy-g
 - Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
   feature de multiusuário.
 
+## Pull requests
+
+- A descrição de todo PR segue `.github/pull_request_template.md`, com as seções **Problema**,
+  **Solução** e **Custo**. O `gh pr create --body-file` não aplica o template sozinho: preencha as
+  três seções no texto enviado.
+- Em **Custo**, informe os tokens usados. Se o valor não estiver disponível, escreva "não medido";
+  nunca estime.
+
 ## Spec Kit
 
 Fluxo para features novas (skills em `.claude/skills/`):
