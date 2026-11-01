@@ -21,3 +21,4 @@ api/tmp/*
 .env*
 **/.env*
 api/config/master.key
+gha-creds-*.json

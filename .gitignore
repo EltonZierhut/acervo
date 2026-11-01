@@ -10,3 +10,6 @@ api/public/assets/
 
 # Claude Code (configurações locais de cada máquina)
 .claude/settings.local.json
+
+# Credenciais temporárias do google-github-actions/auth (criadas na raiz durante o deploy)
+gha-creds-*.json
