@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { initiativesApi } from '../api'
-import { entries, formatDate, isOverdue, PRIORITY_LABELS, TASK_STATUS_OPTIONS } from '../labels'
+import { entries, formatDate, isOverdue, PRIORITY_LABELS, RUN_STATUS_LABELS, TASK_STATUS_OPTIONS } from '../labels'
 import type { Milestone, Task, TaskInput } from '../types'
+import { TaskImages } from './TaskImages'
+import { TaskLinks } from './TaskLinks'
+import { TaskRunPanel } from './TaskRunPanel'
 
 interface Props {
   task: Task
+  repository: string | null
   milestones: Milestone[] | null
   onChanged: () => void
 }
 
-export function TaskItem({ task, milestones, onChanged }: Props) {
+export function TaskItem({ task, repository, milestones, onChanged }: Props) {
   const [editing, setEditing] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -73,6 +77,18 @@ export function TaskItem({ task, milestones, onChanged }: Props) {
           {task.title}
         </button>
         <span className="task-meta small">
+          {(task.images_count > 0 || task.links_count > 0) && (
+            <span className="muted">
+              {task.images_count > 0 && `${task.images_count} ${task.images_count === 1 ? 'imagem' : 'imagens'}`}
+              {task.images_count > 0 && task.links_count > 0 && ' · '}
+              {task.links_count > 0 && `${task.links_count} ${task.links_count === 1 ? 'link' : 'links'}`}
+            </span>
+          )}
+          {task.latest_run && (
+            task.latest_run.pull_request_url
+              ? <a className={`run-status run-${task.latest_run.status}`} href={task.latest_run.pull_request_url} target="_blank" rel="noreferrer">{RUN_STATUS_LABELS[task.latest_run.status]}</a>
+              : <span className={`run-status run-${task.latest_run.status}`}>{RUN_STATUS_LABELS[task.latest_run.status]}</span>
+          )}
           {task.priority !== 'medium' && (
             <span className={`priority priority-${task.priority}`}>{PRIORITY_LABELS[task.priority]}</span>
           )}
@@ -136,6 +152,14 @@ export function TaskItem({ task, milestones, onChanged }: Props) {
             <button type="button" className="btn danger" onClick={remove} disabled={busy}>Apagar</button>
           </div>
         </form>
+      )}
+
+      {editing && (
+        <div className="task-extras">
+          <TaskImages taskId={task.id} onChanged={onChanged} />
+          <TaskLinks taskId={task.id} onChanged={onChanged} />
+          <TaskRunPanel task={task} repository={repository} onChanged={onChanged} />
+        </div>
       )}
     </li>
   )

@@ -35,9 +35,15 @@ export interface InitiativeSummary {
   updated_at: string
 }
 
+export type RepositoryStatus = 'unverified' | 'valid' | 'invalid'
+
 export interface Initiative extends InitiativeSummary {
   description: string | null
   sections: Section[]
+  github_repository: string | null
+  repository_status: RepositoryStatus
+  repository_error: string | null
+  repository_checked_at: string | null
 }
 
 export interface Paginated<T> {
@@ -55,6 +61,7 @@ export interface InitiativeInput {
   due_on: string | null
   tags: string
   sections: Section[]
+  github_repository: string
 }
 
 export interface Milestone {
@@ -86,8 +93,58 @@ export interface Task {
   priority: Priority
   due_on: string | null
   completed_at: string | null
+  images_count: number
+  links_count: number
+  latest_run: { id: number; status: RunStatus; pull_request_url: string | null } | null
   created_at: string
   updated_at: string
+}
+
+export type RunStatus = 'queued' | 'running' | 'waiting' | 'pr_open' | 'no_changes' | 'failed' | 'canceled'
+
+export interface RunQuestion {
+  id: number
+  body: string
+  answer: string | null
+  answered_at: string | null
+}
+
+export interface Run {
+  id: number
+  task_id: number
+  task_title: string
+  initiative_id: number
+  initiative_name: string
+  repository: string
+  status: RunStatus
+  enqueued_at: string
+  started_at: string | null
+  finished_at: string | null
+  failure_kind: string | null
+  failure_reason: string | null
+  summary: string | null
+  pull_request_url: string | null
+  questions: RunQuestion[]
+}
+
+export interface TaskImage {
+  id: number
+  filename: string
+  content_type: string
+  byte_size: number
+  url: string
+}
+
+export interface TaskLink {
+  id: number
+  url: string
+  title: string | null
+}
+
+export interface ExecutorStatusInfo {
+  configured: boolean
+  available: boolean
+  last_seen_at: string | null
 }
 
 export interface TaskList {

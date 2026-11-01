@@ -7,6 +7,7 @@ import { ContextBadge } from '../components/ContextBadge'
 import { InitiativeForm } from '../components/InitiativeForm'
 import { MilestoneList } from '../components/MilestoneList'
 import { ProgressBar } from '../components/ProgressBar'
+import { RepositoryField } from '../components/RepositoryField'
 import { TaskList } from '../components/TaskList'
 import { formatDate, isOverdue, PRIORITY_LABELS, SECTION_LABELS, STATUS_LABELS } from '../labels'
 import type { Initiative, Milestone, Section } from '../types'
@@ -110,7 +111,12 @@ export function InitiativePage() {
       )}
 
       {current === 'tasks' && (
-        <TaskList initiativeId={initiative.id} milestones={usesMilestones ? milestones.data : null} onChanged={onChanged} />
+        <TaskList
+          initiativeId={initiative.id}
+          repository={initiative.repository_status === 'invalid' ? null : initiative.github_repository}
+          milestones={usesMilestones ? milestones.data : null}
+          onChanged={onChanged}
+        />
       )}
       {current === 'milestones' && (
         <MilestoneList
@@ -124,6 +130,7 @@ export function InitiativePage() {
       {current === 'details' && (
         <>
           {saved && <p className="notice">Alterações salvas.</p>}
+          <RepositoryField initiative={initiative} onChanged={setInitiative} />
           <InitiativeForm
             key={initiative.updated_at}
             initiative={initiative}

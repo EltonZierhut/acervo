@@ -22,3 +22,4 @@ api/tmp/*
 **/.env*
 api/config/master.key
 gha-creds-*.json
+executor/

@@ -45,6 +45,7 @@ export function InitiativesPage() {
       <header className="page-header">
         <h1>Iniciativas</h1>
         <div className="actions">
+          <Link to="/iniciativas/fila" className="btn">Fila</Link>
           <Link to="/iniciativas/contextos" className="btn">Contextos</Link>
           <Link to="/iniciativas/nova" className="btn primary">+ Nova iniciativa</Link>
         </div>

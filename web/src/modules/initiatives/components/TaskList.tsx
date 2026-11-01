@@ -8,6 +8,7 @@ import { TaskItem } from './TaskItem'
 
 interface Props {
   initiativeId: number
+  repository: string | null
   // null quando a seção Marcos está desligada.
   milestones: Milestone[] | null
   onChanged: () => void
@@ -15,7 +16,7 @@ interface Props {
 
 const GROUPS: TaskStatus[] = ['doing', 'todo', 'done']
 
-export function TaskList({ initiativeId, milestones, onChanged }: Props) {
+export function TaskList({ initiativeId, repository, milestones, onChanged }: Props) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState('')
   const [milestoneId, setMilestoneId] = useState('')
@@ -104,7 +105,7 @@ export function TaskList({ initiativeId, milestones, onChanged }: Props) {
             <h3>{TASK_STATUS_LABELS[group]} <span className="muted small">{items.length}</span></h3>
             <ul className="task-items">
               {items.map((task) => (
-                <TaskItem key={`${task.id}-${task.updated_at}`} task={task} milestones={milestones} onChanged={changed} />
+                <TaskItem key={task.id} task={task} repository={repository} milestones={milestones} onChanged={changed} />
               ))}
             </ul>
           </section>

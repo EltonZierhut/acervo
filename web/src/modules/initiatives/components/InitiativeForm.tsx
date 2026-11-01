@@ -22,6 +22,7 @@ function toInput(initiative?: Initiative): InitiativeInput {
     due_on: initiative?.due_on ?? null,
     tags: initiative?.tags.join(', ') ?? '',
     sections: initiative?.sections ?? SECTIONS,
+    github_repository: initiative?.github_repository ?? '',
   }
 }
 
@@ -121,6 +122,17 @@ export function InitiativeForm({ initiative, submitLabel, onSubmit }: Props) {
         ))}
         <span className="muted small">Desligar uma seção esconde a aba, sem apagar os dados.</span>
       </fieldset>
+
+      <label>
+        Repositório no GitHub
+        <input
+          value={form.github_repository}
+          onChange={(e) => set('github_repository', e.target.value)}
+          placeholder="dono/repositório ou endereço do GitHub (opcional)"
+          maxLength={300}
+        />
+        <span className="muted small">Necessário só para enviar tarefas para a fila de IA.</span>
+      </label>
 
       {errors.length > 0 && <p className="error">{errors.join(', ')}</p>}
       <button type="submit" className="btn primary" disabled={saving}>{saving ? 'Salvando…' : submitLabel}</button>
