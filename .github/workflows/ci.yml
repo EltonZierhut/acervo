@@ -39,6 +39,18 @@ jobs:
       - run: bin/rails db:create db:schema:load
       - run: bin/rails test
 
+  executor:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: executor
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3.6"
+      - run: ruby -Ilib -Itest -e 'Dir["test/**/*_test.rb"].each { |f| require "./#{f}" }'
+
   web:
     runs-on: ubuntu-24.04
     defaults:

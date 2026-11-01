@@ -16,7 +16,9 @@ module Api
           scope = scope.search(params[:q]) if params[:q].present?
 
           total = scope.unscope(:order).count
-          render json: { data: scope.limit(LIMIT).map { |t| serialize(t) },
+          tasks = scope.limit(LIMIT).to_a
+          extras = extras_for(tasks.map(&:id))
+          render json: { data: tasks.map { |t| serialize(t, extras) },
                          meta: { total:, truncated: total > LIMIT } }
         end
 
@@ -48,9 +50,21 @@ module Api
           params.require(:task).permit(:title, :description, :status, :priority, :due_on, :milestone_id)
         end
 
-        def serialize(task)
+        # Contagens e última execução numa consulta só para a lista inteira.
+        def extras_for(ids)
+          { images: ::Initiatives::TaskImage.where(task_id: ids).group(:task_id).count,
+            links: ::Initiatives::TaskLink.where(task_id: ids).group(:task_id).count,
+            runs: ::Initiatives::Run.latest_by_task(ids) }
+        end
+
+        def serialize(task, extras = extras_for([ task.id ]))
+          run = extras[:runs][task.id]
           task.as_json(only: %i[id initiative_id milestone_id title description status priority due_on
-                                completed_at created_at updated_at])
+                                completed_at created_at updated_at]).merge(
+            images_count: extras[:images].fetch(task.id, 0),
+            links_count: extras[:links].fetch(task.id, 0),
+            latest_run: run&.as_json(only: %i[id status pull_request_url])
+          )
         end
       end
     end

@@ -2,7 +2,8 @@
 
 Organizador pessoal modular. Backend Rails 8 API + PostgreSQL em `api/`, frontend React +
 TypeScript (Vite) em `web/`. Módulos: **Códigos** (notas e scripts para colar, com busca e salvamento automático) e
-**Iniciativas** (projetos de qualquer tipo, com contextos, marcos e tarefas; spec 005).
+**Iniciativas** (projetos de qualquer tipo, com contextos, marcos e tarefas; spec 005). As tarefas podem ser
+desenvolvidas por IA até o PR, por um programa executor em `executor/`, na máquina do usuário (spec 006).
 
 Princípios do projeto: `.specify/memory/constitution.md`. Leia antes de planejar ou implementar.
 
@@ -33,6 +34,11 @@ npm install
 npm run dev                          # http://localhost:5173 (proxy /api → :3000)
 npm run build                        # checa tipos + build
 npm run lint
+
+# Executor (executor/; guia: docs/executor.md)
+ruby -Ilib -Itest -e 'Dir["test/**/*_test.rb"].each { |f| require "./#{f}" }'  # testes
+bin/acervo-executor check            # confere configuração, Docker, gh e API
+bin/acervo-executor run              # processa a fila
 
 # Produção (raiz)
 docker build -t acervo .             # imagem única: React compilado + Rails
@@ -90,6 +96,13 @@ bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (C
   de `/api/v1` responde 401 sem login.
 - Ainda não há multiusuário: os dados dos módulos não têm `user_id`. Não filtre por usuário até a
   feature de multiusuário.
+
+## Executor
+
+- As rotas de `/api/v1/initiatives/executor` autenticam só por token (`Authorization: Bearer`), não por sessão.
+- A IA roda em container sem credenciais do GitHub e com `.git` só para leitura. Commit, push e PR são do executor, com
+  hooks desligados. Não passe credenciais do GitHub para o container nem deixe o agente publicar.
+- `executor/` usa só a biblioteca padrão do Ruby e fica fora da imagem de produção.
 
 ## Branches e pull requests
 

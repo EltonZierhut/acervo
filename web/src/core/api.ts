@@ -30,13 +30,16 @@ export function setUnauthorizedHandler(handler: (() => void) | null) {
 }
 
 async function request<T>(method: string, path: string, body?: unknown, query?: Query): Promise<T> {
-  const response = await fetch(buildUrl(path, query), {
+  return send<T>(path, query, {
     method,
-    // A sessão vai num cookie HttpOnly enviado pelo navegador; nenhum token fica no JavaScript.
-    credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   })
+}
+
+async function send<T>(path: string, query: Query | undefined, init: RequestInit): Promise<T> {
+  // A sessão vai num cookie HttpOnly enviado pelo navegador; nenhum token fica no JavaScript.
+  const response = await fetch(buildUrl(path, query), { ...init, credentials: 'same-origin' })
 
   if (response.status === 204) return undefined as T
 
@@ -54,6 +57,13 @@ export const api = {
   post: <T>(path: string, body: unknown) => request<T>('POST', path, body),
   patch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
   delete: (path: string) => request<void>('DELETE', path),
+  // Envia o arquivo como corpo da requisição, com o tipo dele.
+  upload: <T>(path: string, file: File, query?: Query) =>
+    send<T>(path, query, {
+      method: 'POST',
+      headers: { 'Content-Type': file.type || 'application/octet-stream', Accept: 'application/json' },
+      body: file,
+    }),
 }
 
 export interface CurrentUser {

@@ -22,9 +22,15 @@ class ApplicationController < ActionController::API
 
   def require_json_body
     return unless WRITE_METHODS.include?(request.request_method)
-    return if request.media_type == "application/json"
+    return if request.media_type == "application/json" || accepted_write_media_type?
 
     render json: { error: "Use JSON (Content-Type: application/json)" }, status: :unsupported_media_type
+  end
+
+  # Ações que recebem outro formato sobrescrevem este método. Só libere tipos que um formulário
+  # de outro site não consegue enviar, para manter a proteção contra CSRF.
+  def accepted_write_media_type?
+    false
   end
 
   def render_errors(record)

@@ -11,6 +11,10 @@ module Initiatives
 
     belongs_to :initiative, class_name: "Initiatives::Initiative", touch: true
     belongs_to :milestone, class_name: "Initiatives::Milestone", optional: true
+    # Imagens, links e execuções são apagados pelo banco (ON DELETE CASCADE).
+    has_many :images, class_name: "Initiatives::TaskImage"
+    has_many :links, class_name: "Initiatives::TaskLink"
+    has_many :runs, class_name: "Initiatives::Run"
 
     searchable_partial_columns :title, :description
 
@@ -21,6 +25,7 @@ module Initiatives
     validate :milestone_from_same_initiative
 
     before_save :sync_completed_at
+    after_update :cancel_pending_runs, if: -> { saved_change_to_status? && done? }
 
     scope :in_milestone, ->(id) { id.to_s == "none" ? where(milestone_id: nil) : where(milestone_id: id) }
     # Fazendo, a fazer, concluídas; abertas por prazo, concluídas pela conclusão mais recente.
@@ -45,6 +50,11 @@ module Initiatives
     end
 
     private
+
+    # Tarefa concluída à mão não precisa mais ser executada. A que já está rodando segue até o fim.
+    def cancel_pending_runs
+      runs.where(status: %w[queued waiting]).find_each(&:cancel!)
+    end
 
     def sync_completed_at
       self.completed_at = done? ? (completed_at || Time.current) : nil

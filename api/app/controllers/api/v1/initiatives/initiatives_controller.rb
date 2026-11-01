@@ -2,7 +2,7 @@ module Api
   module V1
     module Initiatives
       class InitiativesController < ApplicationController
-        before_action :set_initiative, only: %i[show update destroy]
+        before_action :set_initiative, only: %i[show update destroy verify_repository]
 
         # GET /api/v1/initiatives/initiatives?q=termo&status=active|all&context_id=1|none&page=1
         # Sem "status", as encerradas ficam de fora.
@@ -37,6 +37,17 @@ module Api
           head :no_content
         end
 
+        # POST /api/v1/initiatives/initiatives/:id/verify_repository
+        def verify_repository
+          if @initiative.github_repository.blank?
+            @initiative.errors.add(:github_repository, "não foi informado")
+            return render_errors(@initiative)
+          end
+
+          @initiative.request_repository_check!
+          render json: serialize(@initiative)
+        end
+
         private
 
         def set_initiative
@@ -53,7 +64,7 @@ module Api
 
         def initiative_params
           params.require(:initiative).permit(
-            :name, :description, :context_id, :status, :priority, :starts_on, :due_on, :tags,
+            :name, :description, :context_id, :status, :priority, :starts_on, :due_on, :tags, :github_repository,
             tags: [], sections: []
           )
         end
@@ -67,7 +78,10 @@ module Api
 
         def serialize(initiative)
           progress = ::Initiatives::Initiative.progress_for([ initiative.id ])[initiative.id]
-          serialize_summary(initiative, progress).merge(initiative.as_json(only: %i[description sections]))
+          serialize_summary(initiative, progress).merge(
+            initiative.as_json(only: %i[description sections github_repository repository_status repository_error
+                                        repository_checked_at])
+          )
         end
       end
     end

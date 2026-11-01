@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# Processa a fila de tarefas do Acervo neste computador. Guia: docs/executor.md
+require_relative "../lib/acervo_executor"
+
+exit AcervoExecutor::CLI.start(ARGV)

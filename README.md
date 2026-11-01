@@ -178,3 +178,8 @@ Fluxo para uma feature nova, dentro do Claude Code:
 ```
 
 Opcionais: `/speckit-clarify` (antes do plano) e `/speckit-analyze` (antes de implementar).
+
+## Execução de tarefas por IA
+
+As tarefas de uma iniciativa conectada a um repositório do GitHub podem ir para uma fila. Um programa no seu computador
+desenvolve cada uma com o Claude Code e abre um pull request para você revisar. Instalação e riscos: [docs/executor.md](docs/executor.md).

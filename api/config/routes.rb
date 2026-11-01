@@ -17,8 +17,30 @@ Rails.application.routes.draw do
       namespace :initiatives do
         resources :contexts, only: %i[index create update destroy]
         resources :initiatives, shallow: true do
+          post :verify_repository, on: :member
           resources :milestones, only: %i[index create update destroy]
-          resources :tasks, only: %i[index create update destroy]
+          resources :tasks, only: %i[index create update destroy] do
+            resources :task_images, only: %i[index create show destroy]
+            resources :task_links, only: %i[index create update destroy]
+            resources :runs, only: %i[index create]
+          end
+        end
+        # Fila de execuções de todas as iniciativas.
+        resources :runs, only: :index do
+          post :cancel, on: :member
+          resources :answers, only: :create, controller: "run_answers"
+        end
+        get "executor_status", to: "executor_status#show"
+
+        # Programa executor: autentica por token, não por sessão (spec 006, FR-023).
+        namespace :executor do
+          post "claim", to: "claims#create"
+          get "images/:id", to: "images#show"
+          post "runs/:id/heartbeat", to: "runs#heartbeat"
+          post "runs/:id/questions", to: "runs#questions"
+          post "runs/:id/complete", to: "runs#complete"
+          get "repository_checks", to: "repository_checks#index"
+          post "repository_checks", to: "repository_checks#create"
         end
       end
 

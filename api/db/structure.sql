@@ -118,6 +118,39 @@ ALTER SEQUENCE public.initiatives_contexts_id_seq OWNED BY public.initiatives_co
 
 
 --
+-- Name: initiatives_executors; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.initiatives_executors (
+    id bigint NOT NULL,
+    token_digest character varying NOT NULL,
+    last_seen_at timestamp(6) without time zone,
+    version character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: initiatives_executors_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.initiatives_executors_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: initiatives_executors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.initiatives_executors_id_seq OWNED BY public.initiatives_executors.id;
+
+
+--
 -- Name: initiatives_initiatives; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -136,7 +169,12 @@ CREATE TABLE public.initiatives_initiatives (
     searchable tsvector GENERATED ALWAYS AS (((setweight(to_tsvector('simple'::regconfig, (COALESCE(name, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(description, ''::text)), 'B'::"char"))) STORED,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
+    github_repository character varying,
+    repository_status character varying DEFAULT 'unverified'::character varying NOT NULL,
+    repository_error text,
+    repository_checked_at timestamp(6) without time zone,
     CONSTRAINT initiatives_dates_check CHECK (((due_on IS NULL) OR (starts_on IS NULL) OR (due_on >= starts_on))),
+    CONSTRAINT initiatives_initiatives_repository_status_check CHECK (((repository_status)::text = ANY ((ARRAY['unverified'::character varying, 'valid'::character varying, 'invalid'::character varying])::text[]))),
     CONSTRAINT initiatives_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
     CONSTRAINT initiatives_status_check CHECK (((status)::text = ANY ((ARRAY['idea'::character varying, 'planned'::character varying, 'active'::character varying, 'paused'::character varying, 'done'::character varying])::text[])))
 );
@@ -194,6 +232,153 @@ CREATE SEQUENCE public.initiatives_milestones_id_seq
 --
 
 ALTER SEQUENCE public.initiatives_milestones_id_seq OWNED BY public.initiatives_milestones.id;
+
+
+--
+-- Name: initiatives_run_questions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.initiatives_run_questions (
+    id bigint NOT NULL,
+    run_id bigint NOT NULL,
+    body text NOT NULL,
+    answer text,
+    answered_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: initiatives_run_questions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.initiatives_run_questions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: initiatives_run_questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.initiatives_run_questions_id_seq OWNED BY public.initiatives_run_questions.id;
+
+
+--
+-- Name: initiatives_runs; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.initiatives_runs (
+    id bigint NOT NULL,
+    task_id bigint NOT NULL,
+    repository character varying NOT NULL,
+    status character varying DEFAULT 'queued'::character varying NOT NULL,
+    enqueued_at timestamp(6) without time zone NOT NULL,
+    started_at timestamp(6) without time zone,
+    finished_at timestamp(6) without time zone,
+    last_heartbeat_at timestamp(6) without time zone,
+    failure_kind character varying,
+    failure_reason text,
+    summary text,
+    pull_request_url character varying,
+    branch character varying,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT initiatives_runs_status_check CHECK (((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'waiting'::character varying, 'pr_open'::character varying, 'no_changes'::character varying, 'failed'::character varying, 'canceled'::character varying])::text[])))
+);
+
+
+--
+-- Name: initiatives_runs_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.initiatives_runs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: initiatives_runs_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.initiatives_runs_id_seq OWNED BY public.initiatives_runs.id;
+
+
+--
+-- Name: initiatives_task_images; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.initiatives_task_images (
+    id bigint NOT NULL,
+    task_id bigint NOT NULL,
+    filename character varying NOT NULL,
+    content_type character varying NOT NULL,
+    byte_size integer NOT NULL,
+    "position" integer DEFAULT 0 NOT NULL,
+    data bytea NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: initiatives_task_images_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.initiatives_task_images_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: initiatives_task_images_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.initiatives_task_images_id_seq OWNED BY public.initiatives_task_images.id;
+
+
+--
+-- Name: initiatives_task_links; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.initiatives_task_links (
+    id bigint NOT NULL,
+    task_id bigint NOT NULL,
+    url text NOT NULL,
+    title character varying,
+    "position" integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: initiatives_task_links_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.initiatives_task_links_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: initiatives_task_links_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.initiatives_task_links_id_seq OWNED BY public.initiatives_task_links.id;
 
 
 --
@@ -328,6 +513,13 @@ ALTER TABLE ONLY public.initiatives_contexts ALTER COLUMN id SET DEFAULT nextval
 
 
 --
+-- Name: initiatives_executors id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_executors ALTER COLUMN id SET DEFAULT nextval('public.initiatives_executors_id_seq'::regclass);
+
+
+--
 -- Name: initiatives_initiatives id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -339,6 +531,34 @@ ALTER TABLE ONLY public.initiatives_initiatives ALTER COLUMN id SET DEFAULT next
 --
 
 ALTER TABLE ONLY public.initiatives_milestones ALTER COLUMN id SET DEFAULT nextval('public.initiatives_milestones_id_seq'::regclass);
+
+
+--
+-- Name: initiatives_run_questions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_run_questions ALTER COLUMN id SET DEFAULT nextval('public.initiatives_run_questions_id_seq'::regclass);
+
+
+--
+-- Name: initiatives_runs id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_runs ALTER COLUMN id SET DEFAULT nextval('public.initiatives_runs_id_seq'::regclass);
+
+
+--
+-- Name: initiatives_task_images id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_images ALTER COLUMN id SET DEFAULT nextval('public.initiatives_task_images_id_seq'::regclass);
+
+
+--
+-- Name: initiatives_task_links id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_links ALTER COLUMN id SET DEFAULT nextval('public.initiatives_task_links_id_seq'::regclass);
 
 
 --
@@ -387,6 +607,14 @@ ALTER TABLE ONLY public.initiatives_contexts
 
 
 --
+-- Name: initiatives_executors initiatives_executors_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_executors
+    ADD CONSTRAINT initiatives_executors_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: initiatives_initiatives initiatives_initiatives_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -400,6 +628,38 @@ ALTER TABLE ONLY public.initiatives_initiatives
 
 ALTER TABLE ONLY public.initiatives_milestones
     ADD CONSTRAINT initiatives_milestones_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: initiatives_run_questions initiatives_run_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_run_questions
+    ADD CONSTRAINT initiatives_run_questions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: initiatives_runs initiatives_runs_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_runs
+    ADD CONSTRAINT initiatives_runs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: initiatives_task_images initiatives_task_images_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_images
+    ADD CONSTRAINT initiatives_task_images_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: initiatives_task_links initiatives_task_links_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_links
+    ADD CONSTRAINT initiatives_task_links_pkey PRIMARY KEY (id);
 
 
 --
@@ -470,6 +730,13 @@ CREATE UNIQUE INDEX index_initiatives_contexts_on_lower_name ON public.initiativ
 
 
 --
+-- Name: index_initiatives_executors_on_token_digest; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_initiatives_executors_on_token_digest ON public.initiatives_executors USING btree (token_digest);
+
+
+--
 -- Name: index_initiatives_initiatives_on_context_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -509,6 +776,55 @@ CREATE INDEX index_initiatives_initiatives_on_tags ON public.initiatives_initiat
 --
 
 CREATE INDEX index_initiatives_milestones_on_initiative_id_and_due_on ON public.initiatives_milestones USING btree (initiative_id, due_on);
+
+
+--
+-- Name: index_initiatives_run_questions_on_run_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_run_questions_on_run_id ON public.initiatives_run_questions USING btree (run_id);
+
+
+--
+-- Name: index_initiatives_runs_on_status_and_enqueued_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_runs_on_status_and_enqueued_at ON public.initiatives_runs USING btree (status, enqueued_at);
+
+
+--
+-- Name: index_initiatives_runs_on_task_id_and_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_runs_on_task_id_and_id ON public.initiatives_runs USING btree (task_id, id);
+
+
+--
+-- Name: index_initiatives_runs_one_active_per_task; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_initiatives_runs_one_active_per_task ON public.initiatives_runs USING btree (task_id) WHERE ((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'waiting'::character varying])::text[]));
+
+
+--
+-- Name: index_initiatives_runs_one_running; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_initiatives_runs_one_running ON public.initiatives_runs USING btree (status) WHERE ((status)::text = 'running'::text);
+
+
+--
+-- Name: index_initiatives_task_images_on_task_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_task_images_on_task_id ON public.initiatives_task_images USING btree (task_id);
+
+
+--
+-- Name: index_initiatives_task_links_on_task_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_task_links_on_task_id ON public.initiatives_task_links USING btree (task_id);
 
 
 --
@@ -569,6 +885,14 @@ ALTER TABLE ONLY public.initiatives_tasks
 
 
 --
+-- Name: initiatives_task_links fk_rails_0e007b284e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_links
+    ADD CONSTRAINT fk_rails_0e007b284e FOREIGN KEY (task_id) REFERENCES public.initiatives_tasks(id) ON DELETE CASCADE;
+
+
+--
 -- Name: initiatives_milestones fk_rails_2efaed1aab; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -577,11 +901,35 @@ ALTER TABLE ONLY public.initiatives_milestones
 
 
 --
+-- Name: initiatives_runs fk_rails_68c1811403; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_runs
+    ADD CONSTRAINT fk_rails_68c1811403 FOREIGN KEY (task_id) REFERENCES public.initiatives_tasks(id) ON DELETE CASCADE;
+
+
+--
 -- Name: sessions fk_rails_758836b4f0; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.sessions
     ADD CONSTRAINT fk_rails_758836b4f0 FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: initiatives_task_images fk_rails_a09ff71f8c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_task_images
+    ADD CONSTRAINT fk_rails_a09ff71f8c FOREIGN KEY (task_id) REFERENCES public.initiatives_tasks(id) ON DELETE CASCADE;
+
+
+--
+-- Name: initiatives_run_questions fk_rails_ababf71257; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.initiatives_run_questions
+    ADD CONSTRAINT fk_rails_ababf71257 FOREIGN KEY (run_id) REFERENCES public.initiatives_runs(id) ON DELETE CASCADE;
 
 
 --
@@ -607,6 +955,9 @@ ALTER TABLE ONLY public.initiatives_tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261101000003'),
+('20261101000002'),
+('20261101000001'),
 ('20261031000001'),
 ('20261030000004'),
 ('20261030000003'),

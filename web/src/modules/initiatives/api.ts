@@ -1,7 +1,7 @@
 import { api } from '../../core/api'
 import type {
-  Context, ContextInput, Initiative, InitiativeInput, InitiativeSummary, Milestone, MilestoneInput,
-  Paginated, Task, TaskInput, TaskList,
+  Context, ContextInput, ExecutorStatusInfo, Initiative, InitiativeInput, InitiativeSummary, Milestone,
+  MilestoneInput, Paginated, Run, Task, TaskImage, TaskInput, TaskLink, TaskList,
 } from './types'
 
 const base = '/initiatives'
@@ -42,4 +42,25 @@ export const initiativesApi = {
     api.post<Task>(`${base}/initiatives/${initiativeId}/tasks`, { task }),
   updateTask: (id: number, task: TaskInput) => api.patch<Task>(`${base}/tasks/${id}`, { task }),
   deleteTask: (id: number) => api.delete(`${base}/tasks/${id}`),
+
+  listImages: (taskId: number) => api.get<TaskImage[]>(`${base}/tasks/${taskId}/task_images`),
+  uploadImage: (taskId: number, file: File) =>
+    api.upload<TaskImage>(`${base}/tasks/${taskId}/task_images`, file, { filename: file.name }),
+  deleteImage: (id: number) => api.delete(`${base}/task_images/${id}`),
+
+  listLinks: (taskId: number) => api.get<TaskLink[]>(`${base}/tasks/${taskId}/task_links`),
+  createLink: (taskId: number, task_link: { url: string; title?: string }) =>
+    api.post<TaskLink>(`${base}/tasks/${taskId}/task_links`, { task_link }),
+  deleteLink: (id: number) => api.delete(`${base}/task_links/${id}`),
+
+  verifyRepository: (id: number) => api.post<Initiative>(`${base}/initiatives/${id}/verify_repository`, {}),
+  executorStatus: () => api.get<ExecutorStatusInfo>(`${base}/executor_status`),
+
+  listTaskRuns: (taskId: number) => api.get<Run[]>(`${base}/tasks/${taskId}/runs`),
+  enqueueTask: (taskId: number) => api.post<Run>(`${base}/tasks/${taskId}/runs`, {}),
+  listRuns: (filters: { q?: string; status?: string; page?: number }) =>
+    api.get<Paginated<Run>>(`${base}/runs`, { ...filters }),
+  cancelRun: (id: number) => api.post<Run>(`${base}/runs/${id}/cancel`, {}),
+  answerRun: (id: number, answers: { question_id: number; answer: string }[]) =>
+    api.post<Run>(`${base}/runs/${id}/answers`, { answers }),
 }
