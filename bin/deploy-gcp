@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Publica o Acervo no Google Cloud Run (região São Paulo).
+# Constrói a imagem do commit atual e publica no Google Cloud Run (região São Paulo).
+# É o que o GitHub Actions executa a cada merge na main; também pode ser rodado à mão.
 # Guia completo: docs/deploy-gcp.md
 #
 # Uso (na raiz do repositório):
@@ -10,31 +11,49 @@
 #   REGION       região (padrão: southamerica-east1, São Paulo)
 set -euo pipefail
 
+for tool in gcloud docker; do
+  if ! command -v "$tool" >/dev/null; then
+    echo "'$tool' não está instalado. Veja docs/deploy-gcp.md." >&2
+    exit 1
+  fi
+done
+
 SERVICE="${SERVICE:-acervo}"
 REGION="${REGION:-southamerica-east1}"
+PROJECT="${GCP_PROJECT:-$(gcloud config get-value project 2>/dev/null)}"
 
 if [ ! -f Dockerfile ] || [ ! -d api ] || [ ! -d web ]; then
   echo "Execute na raiz do repositório do Acervo (onde ficam Dockerfile, api/ e web/)." >&2
   exit 1
 fi
 
-if [ ! -f api/Gemfile.lock ]; then
-  echo "api/Gemfile.lock não encontrado. Rode 'cd api && bundle install', versione o arquivo e tente de novo." >&2
-  echo "Detalhes em docs/deploy-gcp.md (pré-requisitos)." >&2
+if [ -z "$PROJECT" ]; then
+  echo "Projeto não definido. Use GCP_PROJECT=... ou 'gcloud config set project ...'." >&2
   exit 1
 fi
 
-project_args=()
-if [ -n "${GCP_PROJECT:-}" ]; then
-  project_args=(--project "$GCP_PROJECT")
+# A imagem leva o hash do commit, então o código publicado precisa ser exatamente esse commit.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Há alterações sem commit. Publique a partir de um repositório limpo." >&2
+  exit 1
 fi
+
+REGISTRY="${REGION}-docker.pkg.dev"
+IMAGE="${REGISTRY}/${PROJECT}/acervo/${SERVICE}:$(git rev-parse HEAD)"
+
+gcloud auth configure-docker "$REGISTRY" --quiet
+docker build -t "$IMAGE" .
+docker push "$IMAGE"
 
 # --max-instances 1: o limite de tentativas de login usa memória local (uma instância só).
 # --min-instances 0: desliga quando não está em uso (sem cobrança parada).
-# (A forma ${arr[@]+...} evita erro com array vazio no bash 3.2 do macOS.)
-gcloud run deploy "$SERVICE" ${project_args[@]+"${project_args[@]}"} \
-  --source . \
+# A API do Cloud SQL já é ativada pelo bin/setup-gcp; a conta de deploy não precisa checar isso.
+CLOUDSDK_CORE_SHOULD_PROMPT_TO_ENABLE_API=false gcloud run deploy "$SERVICE" \
+  --project "$PROJECT" \
+  --image "$IMAGE" \
   --region "$REGION" \
+  --service-account "acervo-runtime@${PROJECT}.iam.gserviceaccount.com" \
+  --add-cloudsql-instances "${PROJECT}:${REGION}:acervo-db" \
   --allow-unauthenticated \
   --port 8080 \
   --memory 512Mi \
@@ -42,3 +61,7 @@ gcloud run deploy "$SERVICE" ${project_args[@]+"${project_args[@]}"} \
   --min-instances 0 \
   --max-instances 1 \
   --set-secrets DATABASE_URL=DATABASE_URL:latest,SECRET_KEY_BASE=SECRET_KEY_BASE:latest
+
+url="$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" --format 'value(status.url)')"
+curl -fsS --retry 5 --retry-delay 5 --retry-all-errors -o /dev/null "${url}/up"
+echo "Publicado e respondendo: ${url}"

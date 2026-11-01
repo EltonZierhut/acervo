@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Roda uma tarefa do Rails no banco de produção, a partir da sua máquina, pelo Cloud SQL Auth Proxy.
+# Exige Docker, gcloud e `gcloud auth application-default login`. Guia: docs/deploy-gcp.md
+#
+# Uso (na raiz do repositório):
+#   bin/prod-rails acervo:user:create
+#   bin/prod-rails acervo:user:reset_password
+set -euo pipefail
+
+for tool in gcloud docker; do
+  if ! command -v "$tool" >/dev/null; then
+    echo "'$tool' não está instalado. Veja docs/deploy-gcp.md." >&2
+    exit 1
+  fi
+done
+
+REGION="${REGION:-southamerica-east1}"
+PROJECT="${GCP_PROJECT:-$(gcloud config get-value project 2>/dev/null)}"
+
+if [ "$#" -eq 0 ]; then
+  echo "Informe a tarefa. Exemplo: bin/prod-rails acervo:user:create" >&2
+  exit 1
+fi
+
+if [ -z "$PROJECT" ]; then
+  echo "Projeto não definido. Use GCP_PROJECT=... ou 'gcloud config set project ...'." >&2
+  exit 1
+fi
+
+if [ ! -f "${HOME}/.config/gcloud/application_default_credentials.json" ]; then
+  echo "Credenciais não encontradas. Rode: gcloud auth application-default login" >&2
+  exit 1
+fi
+
+# Troca o socket usado no Cloud Run pelo proxy. A senha só passa pelo ambiente, nunca pela linha de comando.
+secret="$(gcloud secrets versions access latest --secret DATABASE_URL --project "$PROJECT")"
+base="${secret%%\?*}"
+export DATABASE_URL="${base/@localhost\//@prod-sql-proxy/}"
+export CLOUD_SQL_INSTANCE="${PROJECT}:${REGION}:acervo-db"
+PROXY_UID="$(id -u)"
+export PROXY_UID
+
+trap 'docker compose --profile prod-sql rm -sf prod-sql-proxy >/dev/null 2>&1 || true' EXIT
+docker compose --profile prod-sql up -d prod-sql-proxy
+
+docker compose run --rm --no-deps -e DATABASE_URL dev bash -c '
+  timeout 30 bash -c "until pg_isready -q -h prod-sql-proxy; do sleep 1; done"
+  bundle check >/dev/null || bundle install
+  exec bin/rails "$@"
+' -- "$@"
