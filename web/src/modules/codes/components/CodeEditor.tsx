@@ -135,7 +135,14 @@ export default function CodeEditor({ initialValue, language, placeholder, ariaLa
     })
     viewRef.current = view
     view.focus()
+    // Quando o teclado virtual abre ou fecha, a janela visível muda: mantém a linha editada à vista.
+    const viewport = window.visualViewport
+    const keepCaretVisible = () => {
+      if (view.hasFocus) view.dispatch({ effects: EditorView.scrollIntoView(view.state.selection.main, { y: 'nearest', yMargin: 24 }) })
+    }
+    viewport?.addEventListener('resize', keepCaretVisible)
     return () => {
+      viewport?.removeEventListener('resize', keepCaretVisible)
       view.destroy()
       viewRef.current = null
     }

@@ -1,3 +1,4 @@
+import { TargetIcon } from '../../core/icons'
 import type { OrganizerModule } from '../types'
 import { ContextsPage } from './pages/ContextsPage'
 import { InitiativeRoute } from './pages/InitiativePage'
@@ -8,7 +9,7 @@ import { QueuePage } from './pages/QueuePage'
 export const initiativesModule: OrganizerModule = {
   key: 'initiatives',
   name: 'Iniciativas',
-  icon: '◆',
+  icon: <TargetIcon />,
   path: '/iniciativas',
   routes: [
     { index: true, element: <InitiativesPage /> },
