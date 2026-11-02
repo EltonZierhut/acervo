@@ -34,6 +34,15 @@
 - [ ] CHK005 Item with specific criteria
 - [ ] CHK006 Final item in this category
 
+## Responsividade (princípio VII da constituição; obrigatória em toda feature com interface)
+
+- [ ] CHK-R01 Cada tela nova funciona em 360 px, sem rolagem horizontal da página
+- [ ] CHK-R02 Conferido em tela larga e nos temas claro e escuro
+- [ ] CHK-R03 Toda interação é possível por toque (nada só com hover, clique direito ou arrastar sem alternativa)
+- [ ] CHK-R04 Alvos de toque de pelo menos 44 × 44 px e campos de texto com fonte de pelo menos 16 px no celular
+- [ ] CHK-R05 Modais e formulários em tela inteira no celular; telas de dois painéis mostram um por vez, com "Voltar"
+- [ ] CHK-R06 As rotas novas entraram em `web/e2e/responsive.spec.ts` e o teste passa
+
 ## Notes
 
 - Mark items `[x]` only after review confirms the requirement-quality criterion is satisfied
