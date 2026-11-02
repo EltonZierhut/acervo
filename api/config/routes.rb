@@ -20,6 +20,7 @@ Rails.application.routes.draw do
           post :verify_repository, on: :member
           resources :milestones, only: %i[index create update destroy]
           resources :tasks, only: %i[index create update destroy] do
+            patch :move, on: :member
             resources :task_images, only: %i[index create show destroy]
             resources :task_links, only: %i[index create update destroy]
             resources :runs, only: %i[index create]

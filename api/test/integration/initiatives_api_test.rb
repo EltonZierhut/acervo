@@ -198,6 +198,55 @@ class InitiativesApiTest < ActionDispatch::IntegrationTest
     assert_equal [ todo ], json["data"].map { |t| t["id"] }
   end
 
+  test "move a tarefa de coluna e a ordem fica salva" do
+    id = create_initiative["id"]
+    a = create_task(id, title: "A")["id"]
+    b = create_task(id, title: "B")["id"]
+    c = create_task(id, title: "C", status: "doing")["id"]
+
+    patch move_api_v1_initiatives_task_path(a), as: :json, params: { status: "doing", position: 0 }
+    assert_response :ok
+    assert_equal "doing", json["status"]
+
+    get api_v1_initiatives_initiative_tasks_path(id)
+    assert_equal [ a, c, b ], json["data"].map { |t| t["id"] }
+    assert_equal [ 1, 3, 2 ], json["data"].map { |t| t["number"] }
+
+    patch move_api_v1_initiatives_task_path(b), as: :json, params: { status: "doing", before_id: c }
+    get api_v1_initiatives_initiative_tasks_path(id)
+    assert_equal [ a, b, c ], json["data"].map { |t| t["id"] }
+
+    patch move_api_v1_initiatives_task_path(b), as: :json, params: { status: "done" }
+    assert_response :ok
+    assert_not_nil json["completed_at"]
+
+    patch move_api_v1_initiatives_task_path(b), as: :json, params: { status: "blocked" }
+    assert_response :unprocessable_entity
+  end
+
+  test "filtra por prioridade e por número da tarefa" do
+    id = create_initiative["id"]
+    create_task(id, title: "Normal")
+    urgent = create_task(id, title: "Urgente", priority: "high")
+
+    get api_v1_initiatives_initiative_tasks_path(id), params: { priority: "high" }
+    assert_equal [ urgent["id"] ], json["data"].map { |t| t["id"] }
+
+    get api_v1_initiatives_initiative_tasks_path(id), params: { number: urgent["number"] }
+    assert_equal [ urgent["id"] ], json["data"].map { |t| t["id"] }
+  end
+
+  test "busca encontra o texto da descrição formatada e mantém a ordem do quadro" do
+    id = create_initiative["id"]
+    first = create_task(id, title: "Um", description: "<p>Ajustar <strong>sonoplastia</strong></p>")["id"]
+    second = create_task(id, title: "Dois", description: "sonoplastia também")["id"]
+    create_task(id, title: "Três")
+
+    get api_v1_initiatives_initiative_tasks_path(id), params: { q: "sonoplastia" }
+    assert_equal [ first, second ], json["data"].map { |t| t["id"] }
+    assert_equal "<p>sonoplastia também</p>", json["data"].last["description"]
+  end
+
   test "tarefa com marco de outra iniciativa ou título vazio retorna 422" do
     id = create_initiative["id"]
     foreign = ::Initiatives::Initiative.create!(name: "Outra").milestones.create!(title: "M")

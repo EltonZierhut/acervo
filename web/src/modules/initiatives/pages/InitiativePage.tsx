@@ -8,7 +8,7 @@ import { InitiativeForm } from '../components/InitiativeForm'
 import { MilestoneList } from '../components/MilestoneList'
 import { ProgressBar } from '../components/ProgressBar'
 import { RepositoryField } from '../components/RepositoryField'
-import { TaskList } from '../components/TaskList'
+import { TaskBoard } from '../components/TaskBoard'
 import { formatDate, isOverdue, PRIORITY_LABELS, SECTION_LABELS, STATUS_LABELS } from '../labels'
 import type { Initiative, Milestone, Section } from '../types'
 
@@ -111,7 +111,7 @@ export function InitiativePage() {
       )}
 
       {current === 'tasks' && (
-        <TaskList
+        <TaskBoard
           initiativeId={initiative.id}
           repository={initiative.repository_status === 'invalid' ? null : initiative.github_repository}
           milestones={usesMilestones ? milestones.data : null}

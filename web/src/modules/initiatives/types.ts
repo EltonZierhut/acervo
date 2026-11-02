@@ -85,6 +85,8 @@ export interface MilestoneInput {
 
 export interface Task {
   id: number
+  number: number
+  position: number
   initiative_id: number
   milestone_id: number | null
   title: string
@@ -150,6 +152,12 @@ export interface ExecutorStatusInfo {
 export interface TaskList {
   data: Task[]
   meta: { total: number; truncated: boolean }
+}
+
+export interface TaskMove {
+  status: TaskStatus
+  position?: number
+  before_id?: number
 }
 
 export interface TaskInput {

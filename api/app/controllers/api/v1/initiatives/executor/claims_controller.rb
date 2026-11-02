@@ -11,7 +11,8 @@ module Api
             render json: { run: {
               id: run.id,
               repository: run.repository,
-              task: task.as_json(only: %i[id initiative_id title description]),
+              # O executor recebe a descrição em texto puro, sem as marcações do editor.
+              task: task.as_json(only: %i[id initiative_id title]).merge("description" => task.description_text),
               images: task.images.without_data.ordered.as_json(only: %i[id filename content_type]),
               links: task.links.ordered.as_json(only: %i[url title]),
               questions: run.questions.ordered.as_json(only: %i[body answer])

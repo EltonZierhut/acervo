@@ -1,7 +1,7 @@
 import { api } from '../../core/api'
 import type {
   Context, ContextInput, ExecutorStatusInfo, Initiative, InitiativeInput, InitiativeSummary, Milestone,
-  MilestoneInput, Paginated, Run, Task, TaskImage, TaskInput, TaskLink, TaskList,
+  MilestoneInput, Paginated, Run, Task, TaskImage, TaskInput, TaskLink, TaskList, TaskMove,
 } from './types'
 
 const base = '/initiatives'
@@ -36,11 +36,12 @@ export const initiativesApi = {
     api.patch<Milestone>(`${base}/milestones/${id}`, { milestone }),
   deleteMilestone: (id: number) => api.delete(`${base}/milestones/${id}`),
 
-  listTasks: (initiativeId: number, filters: { q?: string; status?: string; milestone_id?: string }) =>
+  listTasks: (initiativeId: number, filters: { q?: string; priority?: string; milestone_id?: string; number?: number }) =>
     api.get<TaskList>(`${base}/initiatives/${initiativeId}/tasks`, filters),
   createTask: (initiativeId: number, task: TaskInput) =>
     api.post<Task>(`${base}/initiatives/${initiativeId}/tasks`, { task }),
   updateTask: (id: number, task: TaskInput) => api.patch<Task>(`${base}/tasks/${id}`, { task }),
+  moveTask: (id: number, move: TaskMove) => api.patch<Task>(`${base}/tasks/${id}/move`, { ...move }),
   deleteTask: (id: number) => api.delete(`${base}/tasks/${id}`),
 
   listImages: (taskId: number) => api.get<TaskImage[]>(`${base}/tasks/${taskId}/task_images`),

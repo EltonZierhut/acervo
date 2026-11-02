@@ -10,8 +10,9 @@ export const STATUS_LABELS: Record<InitiativeStatus, string> = {
 
 export const PRIORITY_LABELS: Record<Priority, string> = { high: 'Alta', medium: 'Média', low: 'Baixa' }
 
-export const TASK_STATUS_LABELS: Record<TaskStatus, string> = { doing: 'Fazendo', todo: 'A fazer', done: 'Concluídas' }
-export const TASK_STATUS_OPTIONS: Record<TaskStatus, string> = { todo: 'A fazer', doing: 'Fazendo', done: 'Concluída' }
+// Colunas do quadro, na ordem da tela (todo, doing e done são os status da API).
+export const BOARD_LABELS: Record<TaskStatus, string> = { todo: 'Backlog', doing: 'Executando', done: 'Finalizado' }
+export const BOARD_COLUMNS = Object.keys(BOARD_LABELS) as TaskStatus[]
 
 // Mesma ordem da API (Initiative::SECTIONS).
 export const SECTION_LABELS: Record<Section, string> = { tasks: 'Tarefas', milestones: 'Marcos' }
