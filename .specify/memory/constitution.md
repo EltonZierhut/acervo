@@ -1,12 +1,13 @@
 <!--
 Sync Impact Report
+- Versão: 1.2.0 → 1.3.0 (MINOR): princípio VII ampliado para Responsivo e instalável (PWA, card "Acervo instalável")
 - Versão: 1.1.0 → 1.2.0 (MINOR): novo princípio VII. Responsivo (feature 008)
 - Versão: 1.0.2 → 1.1.0 (MINOR): nenhuma alteração entra na `main` sem branch e PR
 - Versão: 1.0.1 → 1.0.2 (PATCH): realce de código removido da stack, sem uso (feature 003)
 - Versão: 1.0.0 → 1.0.1 (PATCH): descrição do módulo Códigos, que deixou de ter projetos (feature 003)
 - Versão anterior: (template) → 1.0.0
 - Princípios definidos: I. Modularidade, II. Simplicidade, III. Busca é recurso central,
-  IV. Contrato de API estável, V. Qualidade verificável, VI. Idioma e consistência
+  IV. Contrato de API estável, V. Qualidade verificável, VI. Idioma e consistência (VII entrou na 1.2.0)
 - Seções adicionadas: Restrições técnicas, Fluxo de desenvolvimento, Governança
 - Templates: checklist-template.md ganhou a seção Responsividade; plan-template, spec-template e tasks-template sem alterações
 - Pendências: nenhuma
@@ -79,9 +80,9 @@ Encontrar informação rapidamente é o propósito do Acervo.
   Rotas do frontend visíveis ao usuário podem ser em português (`/codigos`).
 - Seguir os padrões já existentes no código antes de criar novos.
 
-### VII. Responsivo
+### VII. Responsivo e instalável
 
-O Acervo é usado no computador e no celular, com o mesmo conforto.
+O Acervo é usado no computador e no celular, com o mesmo conforto, também como app instalado.
 
 - Toda tela DEVE funcionar a partir de **360 px** de largura, sem rolagem horizontal da página.
 - Toda interação DEVE ser possível por **toque**. Nada pode depender só de passar o mouse por cima,
@@ -92,6 +93,10 @@ O Acervo é usado no computador e no celular, com o mesmo conforto.
   painéis (lista + item) mostram um painel por vez, com "Voltar"; conteúdo respeita as áreas seguras.
 - A verificação em 360 px, em tela larga e nos temas claro e escuro entra no checklist de qualidade de
   toda feature. O teste `web/e2e/responsive.spec.ts` abre cada rota em 360 px; toda rota nova entra na lista dele.
+- Toda tela nova funciona também no **app instalado** (PWA, em tela cheia, sem a barra do navegador).
+- O service worker guarda só a interface (HTML, JS, CSS, ícones). Nunca guarda respostas da API
+  (`/api`) nem credenciais; os dados exigem conexão e, sem internet, o app avisa que está offline.
+- Versão nova da interface nunca é aplicada sozinha: a pessoa confirma em "Atualizar".
 
 ## Restrições técnicas
 
@@ -124,4 +129,4 @@ O Acervo é usado no computador e no celular, com o mesmo conforto.
   adicionar princípios ou seções, PATCH para esclarecimentos.
 - Orientações práticas do dia a dia ficam em `CLAUDE.md`.
 
-**Versão**: 1.2.0 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-11-02
+**Versão**: 1.3.0 | **Ratificada**: 2026-10-30 | **Última alteração**: 2026-11-02

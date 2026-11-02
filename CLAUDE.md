@@ -93,6 +93,16 @@ bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (C
 - Conferir em 360 px, em tela larga e nos temas claro e escuro. Rota nova entra na lista `ROUTES` de
   `web/e2e/responsive.spec.ts` (API simulada em `e2e/mock-api.ts`). O CI ainda não roda esse teste.
 
+## App instalável (PWA)
+
+- Premissa: toda tela nova DEVE funcionar também no **app instalado** (princípio VII da constituição, junto com a responsividade).
+- `web/sw.template.js` vira `sw.js` no build (plugin em `web/vite.config.ts`, com a lista de arquivos e a versão).
+  O service worker guarda só a interface; **nunca `/api` nem `/up`**, nem credenciais. A versão nova só assume
+  quando a pessoa clica em "Atualizar" (`web/src/core/Pwa.tsx`).
+- `sw.js`, `manifest.webmanifest` e `icons/` vão para `api/frontend/` (não `public/`, que tem cache de 1 ano) e
+  são entregues na raiz pelo `PwaController`, antes do catch-all. Ícones-base em `web/icon-src/` (SVG).
+- Só dá para testar de verdade em HTTPS ou `localhost`; roteiro em `specs/008-pwa-installable/quickstart.md`.
+
 ## Autenticação
 
 - Toda ação de controller exige login por padrão (`Authentication` incluído no

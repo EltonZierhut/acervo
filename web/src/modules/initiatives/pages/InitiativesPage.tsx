@@ -51,6 +51,10 @@ export function InitiativesPage() {
         </div>
       </header>
 
+      {params.get('nova_tarefa') && (
+        <p className="muted" role="status">Escolha a iniciativa onde criar a tarefa.</p>
+      )}
+
       <div className="filters">
         <input
           className="search"
