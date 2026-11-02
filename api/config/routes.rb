@@ -49,6 +49,11 @@ Rails.application.routes.draw do
     end
   end
 
+  # App instalável (PWA): ficam na raiz, não em /assets. Antes do catch-all.
+  get "sw.js", to: "pwa#service_worker", format: false
+  get "manifest.webmanifest", to: "pwa#manifest", format: false
+  get "icons/:name", to: "pwa#icon", format: false, constraints: { name: /[\w-]+\.png/ }
+
   # Interface (SPA). O catch-all precisa ser a ÚLTIMA rota: qualquer navegação que aceite
   # HTML e não seja da API, do health check ou de assets recebe o index.html do React.
   root "spa#index"

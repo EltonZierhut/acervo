@@ -41,10 +41,12 @@ FROM base
 COPY --from=gems "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY api/ ./
 
-# assets/ vai para public/ (servido com cache longo); index.html vai para frontend/,
-# fora de public/, e é entregue sem cache pelo SpaController.
+# assets/ vai para public/ (servido com cache longo); index.html, sw.js, manifesto e ícones vão
+# para frontend/, fora de public/, e são entregues pelo SpaController e pelo PwaController
+# (sem cache longo, que atrasaria a atualização do app).
 COPY --from=web /web/dist/ ./public/
-RUN mkdir -p frontend && mv public/index.html frontend/index.html && \
+RUN mkdir -p frontend && \
+    mv public/index.html public/sw.js public/manifest.webmanifest public/icons frontend/ && \
     bundle exec bootsnap precompile app/ lib/
 
 RUN groupadd --system --gid 1000 rails && \

@@ -2,12 +2,14 @@ import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-rou
 import { AuthProvider, RequireAuth } from './core/auth'
 import { Layout } from './core/Layout'
 import { LoginPage } from './core/LoginPage'
+import { PwaNotices } from './core/Pwa'
 import { modules } from './modules'
 
 // AuthProvider fica dentro do router porque usa useNavigate/useLocation.
 function Root() {
   return (
     <AuthProvider>
+      <PwaNotices />
       <Outlet />
     </AuthProvider>
   )

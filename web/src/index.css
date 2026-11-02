@@ -329,3 +329,36 @@ body.modal-open { overflow: hidden; }
 .rich-content ul[data-type=taskList] li > div { flex: 1; min-width: 0; }
 .rich-content ul[data-type=taskList] li[data-checked=true] > div { color: var(--muted); text-decoration: line-through; }
 .rich-content a { text-decoration: underline; }
+
+/* App instalável (PWA): avisos fixos no rodapé, acima da área segura do iPhone */
+.pwa-notices {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+.pwa-notice {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 auto;
+  max-width: 560px;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+}
+.pwa-notice.offline {
+  border-color: var(--danger);
+}
