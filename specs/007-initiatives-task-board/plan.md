@@ -17,7 +17,9 @@ Nenhuma gem nova: a sanitização usa o `rails-html-sanitizer` que já vem com o
   existentes são preenchidos: número pela ordem de criação, posição pela ordem que a lista já tinha, descrições
   antigas em parágrafos HTML. Reversível (o `down` volta a descrição para texto puro).
 - `number` é nulável para o código antigo continuar criando tarefas durante a troca de versões do deploy; o
-  model preenche o número no `before_save` quando faltar.
+  model preenche o número no `before_save` quando faltar. O número vem de `initiatives_initiatives.last_task_number`
+  (contador preenchido com o maior número existente), e não de `max(number) + 1`: o número de uma tarefa apagada
+  não volta a ser usado, senão `?tarefa=12` abriria outra tarefa.
 - `Initiatives::RichText`: sanitiza com `Rails::HTML5::SafeListSanitizer` (tags `p br h1-h3 strong b em i u s del
   code pre blockquote ul ol li a hr`; atributos `href`, `data-type`, `data-checked`; `<script>`, `<style>` e
   afins saem com o conteúdo; `javascript:` em `href` é descartado) e gera o texto puro. Texto sem tags vira

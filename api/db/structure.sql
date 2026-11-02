@@ -173,6 +173,7 @@ CREATE TABLE public.initiatives_initiatives (
     repository_status character varying DEFAULT 'unverified'::character varying NOT NULL,
     repository_error text,
     repository_checked_at timestamp(6) without time zone,
+    last_task_number integer DEFAULT 0 NOT NULL,
     CONSTRAINT initiatives_dates_check CHECK (((due_on IS NULL) OR (starts_on IS NULL) OR (due_on >= starts_on))),
     CONSTRAINT initiatives_initiatives_repository_status_check CHECK (((repository_status)::text = ANY ((ARRAY['unverified'::character varying, 'valid'::character varying, 'invalid'::character varying])::text[]))),
     CONSTRAINT initiatives_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
@@ -400,7 +401,7 @@ CREATE TABLE public.initiatives_tasks (
     number integer,
     "position" integer DEFAULT 0 NOT NULL,
     description_text text,
-    searchable tsvector GENERATED ALWAYS AS ((setweight(to_tsvector('simple'::regconfig, COALESCE((title)::text, ''::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, COALESCE(description_text, ''::text)), 'B'::"char"))) STORED,
+    searchable tsvector GENERATED ALWAYS AS ((setweight(to_tsvector('simple'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, COALESCE(description_text, ''::text)), 'B'::"char"))) STORED,
     CONSTRAINT initiatives_tasks_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
     CONSTRAINT initiatives_tasks_status_check CHECK (((status)::text = ANY ((ARRAY['todo'::character varying, 'doing'::character varying, 'done'::character varying])::text[])))
 );
@@ -831,6 +832,13 @@ CREATE INDEX index_initiatives_task_links_on_task_id ON public.initiatives_task_
 
 
 --
+-- Name: index_initiatives_tasks_on_board_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_tasks_on_board_order ON public.initiatives_tasks USING btree (initiative_id, status, "position");
+
+
+--
 -- Name: index_initiatives_tasks_on_initiative_id_and_number; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -842,13 +850,6 @@ CREATE UNIQUE INDEX index_initiatives_tasks_on_initiative_id_and_number ON publi
 --
 
 CREATE INDEX index_initiatives_tasks_on_initiative_id_and_status ON public.initiatives_tasks USING btree (initiative_id, status);
-
-
---
--- Name: index_initiatives_tasks_on_board_order; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_initiatives_tasks_on_board_order ON public.initiatives_tasks USING btree (initiative_id, status, "position");
 
 
 --

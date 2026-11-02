@@ -78,12 +78,15 @@ module Initiatives
       runs.where(status: %w[queued waiting]).find_each(&:cancel!)
     end
 
-    # Número da tarefa dentro da iniciativa (#12). O bloqueio evita dois números iguais em criações simultâneas.
+    # Número da tarefa dentro da iniciativa (#12). Vem de um contador na iniciativa, e não do maior número
+    # existente, para que o número de uma tarefa apagada não seja reaproveitado (o endereço ?tarefa=12 abriria
+    # outra tarefa). O bloqueio evita dois números iguais em criações simultâneas.
     def assign_number
       return if number
 
       initiative.lock!
-      self.number = (initiative.tasks.maximum(:number) || 0) + 1
+      self.number = initiative.last_task_number + 1
+      initiative.update_columns(last_task_number: number)
     end
 
     def append_to_column

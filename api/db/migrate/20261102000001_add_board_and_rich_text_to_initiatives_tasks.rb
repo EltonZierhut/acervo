@@ -1,7 +1,8 @@
 require "erb"
 
 # Quadro de tarefas (spec 007): número por iniciativa, posição na coluna e descrição em HTML,
-# com uma coluna de texto puro (description_text) para a busca.
+# com uma coluna de texto puro (description_text) para a busca. last_task_number guarda o último
+# número dado na iniciativa, para que o número de uma tarefa apagada não volte a ser usado.
 class AddBoardAndRichTextToInitiativesTasks < ActiveRecord::Migration[8.0]
   def up
     add_column :initiatives_tasks, :number, :integer
@@ -12,6 +13,12 @@ class AddBoardAndRichTextToInitiativesTasks < ActiveRecord::Migration[8.0]
       UPDATE initiatives_tasks t SET number = r.rn
       FROM (SELECT id, row_number() OVER (PARTITION BY initiative_id ORDER BY id) AS rn FROM initiatives_tasks) r
       WHERE r.id = t.id
+    SQL
+    add_column :initiatives_initiatives, :last_task_number, :integer, null: false, default: 0
+    execute <<~SQL.squish
+      UPDATE initiatives_initiatives i SET last_task_number = t.max_number
+      FROM (SELECT initiative_id, max(number) AS max_number FROM initiatives_tasks GROUP BY initiative_id) t
+      WHERE t.initiative_id = i.id
     SQL
     # Mantém a ordem que a lista tinha: prazo nas abertas, conclusão mais recente nas concluídas.
     execute <<~SQL.squish
@@ -52,6 +59,7 @@ class AddBoardAndRichTextToInitiativesTasks < ActiveRecord::Migration[8.0]
     remove_column :initiatives_tasks, :description_text
     remove_column :initiatives_tasks, :position
     remove_column :initiatives_tasks, :number
+    remove_column :initiatives_initiatives, :last_task_number
     add_search_column(:description)
     add_index :initiatives_tasks, :searchable, using: :gin
   end
