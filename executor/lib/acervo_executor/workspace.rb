@@ -53,7 +53,10 @@ module AcervoExecutor
       path = PR_TEMPLATES.map { |name| File.join(@repo_dir, name) }.find do |file|
         File.file?(file) && !File.symlink?(file)
       end
-      path && File.read(path, MAX_TEMPLATE_BYTES)
+      return unless path
+
+      # File.read com limite devolve bytes (ASCII-8BIT); o corte pode partir um caractere ao meio.
+      File.read(path, MAX_TEMPLATE_BYTES).force_encoding(Encoding::UTF_8).scrub("")
     end
   end
 end
