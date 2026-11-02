@@ -99,4 +99,24 @@ class WorkspaceTest < Minitest::Test
       assert_equal "## Modelo", workspace.pr_template
     end
   end
+
+  def test_modelo_de_pr_com_acentos_entra_no_prompt
+    AcervoExecutor::Workspace.open do |workspace|
+      FileUtils.mkdir_p(File.join(workspace.repo_dir, ".github"))
+      File.write(File.join(workspace.repo_dir, ".github/pull_request_template.md"), "## Solução\n")
+      template = workspace.pr_template
+      assert_equal Encoding::UTF_8, template.encoding
+      prompt = AcervoExecutor::Prompt.render({ "task" => { "title" => "Título" } }, image_paths: [], pr_template: template)
+      assert_includes prompt, "## Solução"
+    end
+  end
+
+  def test_modelo_de_pr_cortado_no_meio_de_um_caractere
+    AcervoExecutor::Workspace.open do |workspace|
+      limit = AcervoExecutor::Workspace::MAX_TEMPLATE_BYTES
+      FileUtils.mkdir_p(workspace.repo_dir)
+      File.write(File.join(workspace.repo_dir, "pull_request_template.md"), ("a" * (limit - 1)) + "ç")
+      assert workspace.pr_template.valid_encoding?
+    end
+  end
 end
