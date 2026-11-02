@@ -1,14 +1,15 @@
 <!--
 Sync Impact Report
-- Versão: 1.1.0 → 1.3.0 (MINOR): princípio VII, Responsivo e instalável (cards "telas no celular" e "Acervo instalável")
+- Versão: 1.2.0 → 1.3.0 (MINOR): princípio VII ampliado para Responsivo e instalável (PWA, card "Acervo instalável")
+- Versão: 1.1.0 → 1.2.0 (MINOR): novo princípio VII. Responsivo (feature 008)
 - Versão: 1.0.2 → 1.1.0 (MINOR): nenhuma alteração entra na `main` sem branch e PR
 - Versão: 1.0.1 → 1.0.2 (PATCH): realce de código removido da stack, sem uso (feature 003)
 - Versão: 1.0.0 → 1.0.1 (PATCH): descrição do módulo Códigos, que deixou de ter projetos (feature 003)
 - Versão anterior: (template) → 1.0.0
 - Princípios definidos: I. Modularidade, II. Simplicidade, III. Busca é recurso central,
-  IV. Contrato de API estável, V. Qualidade verificável, VI. Idioma e consistência (VII entrou na 1.3.0)
+  IV. Contrato de API estável, V. Qualidade verificável, VI. Idioma e consistência (VII entrou na 1.2.0)
 - Seções adicionadas: Restrições técnicas, Fluxo de desenvolvimento, Governança
-- Templates: plan-template.md, spec-template.md e tasks-template.md compatíveis (sem alterações)
+- Templates: checklist-template.md ganhou a seção Responsividade; plan-template, spec-template e tasks-template sem alterações
 - Pendências: nenhuma
 -->
 
@@ -81,8 +82,18 @@ Encontrar informação rapidamente é o propósito do Acervo.
 
 ### VII. Responsivo e instalável
 
-- Toda tela nova funciona no celular e também no **app instalado** (PWA, em tela cheia, sem a barra
-  do navegador).
+O Acervo é usado no computador e no celular, com o mesmo conforto, também como app instalado.
+
+- Toda tela DEVE funcionar a partir de **360 px** de largura, sem rolagem horizontal da página.
+- Toda interação DEVE ser possível por **toque**. Nada pode depender só de passar o mouse por cima,
+  de clique direito ou de arrastar sem alternativa.
+- No celular (até 720 px, o único ponto de quebra): navegação na barra inferior; alvos de toque de pelo
+  menos 44 × 44 px; campos de texto com fonte de pelo menos 16 px (o iPhone dá zoom abaixo disso);
+  modais e formulários em tela inteira, com fechar e ações principais sempre visíveis; telas de dois
+  painéis (lista + item) mostram um painel por vez, com "Voltar"; conteúdo respeita as áreas seguras.
+- A verificação em 360 px, em tela larga e nos temas claro e escuro entra no checklist de qualidade de
+  toda feature. O teste `web/e2e/responsive.spec.ts` abre cada rota em 360 px; toda rota nova entra na lista dele.
+- Toda tela nova funciona também no **app instalado** (PWA, em tela cheia, sem a barra do navegador).
 - O service worker guarda só a interface (HTML, JS, CSS, ícones). Nunca guarda respostas da API
   (`/api`) nem credenciais; os dados exigem conexão e, sem internet, o app avisa que está offline.
 - Versão nova da interface nunca é aplicada sozinha: a pessoa confirma em "Atualizar".
@@ -91,7 +102,7 @@ Encontrar informação rapidamente é o propósito do Acervo.
 
 - Backend: Ruby 3.2+, Rails 8 em modo API, PostgreSQL 14+ (extensão `pg_trgm`).
   Schema salvo em SQL (`db/structure.sql`).
-- Frontend: React 19, TypeScript, Vite, React Router.
+- Frontend: React 19, TypeScript, Vite, React Router. Testes de responsividade com Playwright (dependência de desenvolvimento).
 - Datas e horários no fuso `America/Sao_Paulo`.
 - Uso pessoal: sem multiusuário por enquanto. Autenticação, quando entrar, será uma feature
   própria com spec.

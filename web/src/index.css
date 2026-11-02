@@ -50,18 +50,23 @@
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; }
+body { margin: 0; overflow-x: hidden; }
+/* Premissa VII: toda tela funciona a partir de 360 px, sem rolagem horizontal da página. */
+#root { min-width: 0; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 h1 { font-size: 1.6rem; margin: 0; }
 h2 { font-size: 1.2rem; margin: 0; }
+
+.bottom-bar { display: none; }
 
 .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 20px 14px; display: flex; flex-direction: column; gap: 18px; }
 .brand { font-weight: 700; font-size: 1.1rem; padding: 0 8px; }
 .sidebar nav { display: flex; flex-direction: column; gap: 4px; }
 .nav-item { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; color: var(--text); }
-.nav-item span { font-family: ui-monospace, monospace; font-size: .8rem; color: var(--muted); width: 22px; }
+.nav-icon { display: inline-flex; width: 22px; color: var(--muted); }
+.nav-item.active .nav-icon { color: var(--accent); }
 .nav-item:hover { background: var(--accent-soft); text-decoration: none; }
 .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
 .sidebar-hint { margin-top: auto; font-size: .8rem; color: var(--muted); padding: 0 8px; }
@@ -191,39 +196,127 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .small-btn { font-size: .85rem; padding: 5px 10px; align-self: flex-start; }
 
 /* Tela de login */
-.login-page { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+.login-page { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 .login-card { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; }
 .login-card h1 { font-size: 1.5rem; }
 .login-card p { margin: 0; }
 .login-card label { display: flex; flex-direction: column; gap: 5px; font-weight: 500; font-size: .9rem; }
 .login-card .btn.primary { margin-top: 4px; padding: 10px 14px; }
 
+/*
+ * Celular: um único ponto de quebra, 720 px (media query não aceita var(), por isso o valor se repete;
+ * no TypeScript ele é MOBILE_MAX_WIDTH em core/breakpoints.ts). Regras do princípio VII da constituição:
+ * alvos de toque de 44 px, campos de 16 px (o iPhone dá zoom abaixo disso), modais em tela cheia,
+ * painéis lista + item um de cada vez e áreas seguras (viewport-fit=cover no index.html).
+ */
 @media (max-width: 720px) {
-  .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  .sidebar { flex-direction: row; align-items: center; padding: 10px 14px; border-right: none; border-bottom: 1px solid var(--border); }
-  .sidebar nav { flex-direction: row; min-width: 0; overflow-x: auto; }
-  .sidebar { gap: 10px; }
-  .nav-item { white-space: nowrap; }
-  .nav-item span { display: none; }
-  .sidebar-hint { display: none; }
-  .account { margin: 0 0 0 auto; flex-direction: row; align-items: center; padding: 0; border-top: none; min-width: 0; }
-  .account-email { display: none; }
-  .content { padding: 18px 16px; }
+  :root { --touch: 44px; --bottom-bar: calc(60px + env(safe-area-inset-bottom)); }
+
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .sidebar { display: none; }
+  .content {
+    padding: calc(18px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+      calc(var(--bottom-bar) + 18px) calc(16px + env(safe-area-inset-left));
+  }
+
+  /* Barra inferior fixa, ao alcance do polegar */
+  .bottom-bar { display: block; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; }
+  .bottom-nav {
+    display: flex; background: var(--surface); border-top: 1px solid var(--border);
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .bottom-item {
+    flex: 1 1 0; min-width: 0; min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    padding: 6px 4px; border: none; border-radius: 0; background: none; color: var(--muted); font-size: .75rem;
+  }
+  .bottom-item:hover { text-decoration: none; border-color: transparent; }
+  .bottom-item.active, .bottom-item[aria-expanded=true] { color: var(--accent); font-weight: 600; }
+  .bottom-item .nav-icon { width: 24px; height: 24px; color: inherit; }
+  .bottom-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .account-menu {
+    position: absolute; right: calc(8px + env(safe-area-inset-right)); bottom: calc(100% + 8px); min-width: 220px; max-width: calc(100vw - 16px);
+    display: flex; flex-direction: column; gap: 10px; padding: 12px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+  }
+
+  /* Alvos de toque de pelo menos 44 x 44 px */
+  .btn, button, select, input:not([type=checkbox]):not([type=radio]), .tab, .back, summary, .note-item, .file-button, .link-button {
+    min-height: var(--touch);
+  }
+  .btn, .small-btn, .tab, .chip, .board-add, .task-title, .link-button, .modal-close, .rich-toolbar button, .swatch, .thumb {
+    min-width: var(--touch);
+  }
+  .btn, .small-btn, .chip, .file-button, .link-button { display: inline-flex; align-items: center; justify-content: center; }
+  .back { display: inline-flex; align-items: center; margin-bottom: 4px; }
+  .small-btn { padding: 7px 14px; }
+  .tab { padding: 8px 16px; }
+  .task-title { padding: 10px 0; }
+  .task-card { min-height: var(--touch); padding: 10px 12px; }
+  .note-item { justify-content: center; }
+  .thumb { min-height: 72px; }
+  .swatch { width: var(--touch); height: var(--touch); }
+  .swatch.selected { box-shadow: 0 0 0 6px var(--surface) inset; }
+  .rich-toolbar button { padding: 2px 10px; font-size: .9rem; }
+  .modal-close { font-size: 2rem; }
+  /* Caixas de seleção: o quadrado fica pequeno, a área tocável vai até 44 px pela borda transparente */
+  input[type=checkbox], input[type=radio] { width: 24px; height: 24px; flex: none; margin: 10px; }
+  .milestone-row input[type=checkbox] { width: 24px; height: 24px; margin: 10px 4px 10px 0; }
+  .check input[type=checkbox] { width: 24px; height: 24px; margin: 10px; }
+  .form label.check { min-height: var(--touch); }
+  .milestone-progress, .milestone .description { margin-left: 38px; }
+
+  /* Campos com 16 px: abaixo disso o iPhone dá zoom ao focar */
+  input, select, textarea, .code-input, .modal-title, .rich-content, .cm-editor .cm-content, .cm-editor .cm-textfield {
+    font-size: 16px !important;
+  }
+  .cm-editor .cm-gutters, .cm-editor .cm-scroller { font-size: 16px; }
+  .cm-editor .cm-panel.cm-search { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 32px 8px 8px; }
+  .cm-editor .cm-panel.cm-search br { display: none; }
+  .cm-editor .cm-panel.cm-search .cm-textfield { flex: 1 1 140px; min-width: 0; min-height: var(--touch); }
+  .cm-editor .cm-panel.cm-search .cm-button, .cm-editor .cm-panel.cm-search label { min-height: var(--touch); display: inline-flex; align-items: center; }
+  .cm-editor .cm-panel.cm-search [name=close] { min-width: var(--touch); min-height: var(--touch); top: 0; right: 0; }
+  .cm-editor .cm-panel.cm-search input[type=checkbox] { margin: 0 4px 0 0; width: 22px; height: 22px; }
+
+  /* Layout das telas */
   .filters { flex-wrap: wrap; }
+  .filters select { flex: 1 1 140px; min-width: 0; }
+  .filters .search { flex-basis: 100%; }
   .form .row { grid-template-columns: 1fr; }
+  .form .btn.primary { align-self: stretch; }
+  .page-header { flex-wrap: wrap; }
+  .quick-add { flex-wrap: wrap; }
+  .quick-add input:not([type=date]) { flex-basis: 100%; }
+  .task-meta { flex-basis: 100%; padding-left: 38px; flex-wrap: wrap; }
+  .context-row .actions { margin-left: 0; }
+  .card-list.grid { grid-template-columns: minmax(0, 1fr); }
+  .pagination { flex-wrap: wrap; }
+  .note-toolbar .actions .btn { flex: 1 1 auto; }
+
+  /* Duas colunas (lista + item) viram um painel por vez, com "Voltar" claro */
   .notes { grid-template-columns: minmax(0, 1fr); }
   .notes-side { position: static; max-height: none; }
   .notes.has-note .notes-side { display: none; }
   .notes:not(.has-note) .notes-pane { display: none; }
-  .notes-back { display: inline-block; }
-  .filters .search { flex-basis: 100%; }
-  .page-header { flex-wrap: wrap; }
-  .quick-add { flex-wrap: wrap; }
-  .quick-add input:not([type=date]) { flex-basis: 100%; }
-  .task-meta { flex-basis: 100%; padding-left: 28px; flex-wrap: wrap; }
+  .notes-back { display: inline-flex; }
+  /* O teclado virtual encolhe a janela (interactive-widget=resizes-content); o editor acompanha */
+  .note-content { height: 70dvh; min-height: 50dvh; resize: none; }
+
+  /* Quadro: colunas empilhadas, sem rolagem lateral; o status também muda pelo modal da tarefa */
+  .board { flex-direction: column; overflow-x: visible; }
+  .board-column { flex: none; width: 100%; min-width: 0; max-width: none; }
+
+  /* Modal: tela inteira, com o cabeçalho (fechar) sempre visível */
   .modal-body { grid-template-columns: minmax(0, 1fr); }
-  .modal-backdrop { padding: 0; }
-  .modal { max-height: 100vh; min-height: 100vh; border-radius: 0; }
+  .modal-backdrop { padding: 0; overflow: hidden; }
+  .modal {
+    width: 100%; height: 100dvh; max-height: none; border-radius: 0; border: none; overflow-y: auto; overscroll-behavior: contain;
+    padding: 0 calc(16px + env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  }
+  .modal-header {
+    position: sticky; top: 0; z-index: 2; margin: 0 -16px 8px; padding: calc(8px + env(safe-area-inset-top)) 16px 8px;
+    background: var(--bg); border-bottom: 1px solid var(--border);
+  }
+  .image-viewer { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
 }
 
 /* Iniciativas: anexos e execução por IA */

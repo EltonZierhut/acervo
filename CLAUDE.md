@@ -34,6 +34,7 @@ npm install
 npm run dev                          # http://localhost:5173 (proxy /api → :3000)
 npm run build                        # checa tipos + build
 npm run lint
+npm run test:e2e                     # responsividade em 360 px e tela larga (Playwright; 1ª vez: npx playwright install chromium)
 
 # Executor (executor/; guia: docs/executor.md)
 ruby -Ilib -Itest -e 'Dir["test/**/*_test.rb"].each { |f| require "./#{f}" }'  # testes
@@ -80,9 +81,21 @@ bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (C
 - **Schema** em SQL (`db/structure.sql`), não `schema.rb`.
 - Com `verbatimModuleSyntax`, importe tipos com `import type`.
 
+## Responsividade (princípio VII)
+
+- Toda tela DEVE funcionar a partir de **360 px**, sem rolagem horizontal da página, e toda interação DEVE
+  ser possível por **toque** (nada só com hover, clique direito ou arrastar sem alternativa).
+- Ponto de quebra único: `@media (max-width: 720px)` no fim do `index.css` (também `MOBILE_MAX_WIDTH` em
+  `core/breakpoints.ts`). Ali ficam as regras do celular: alvos de 44 px (`--touch`), campos de 16 px,
+  modais em tela cheia, painel único para lista + item, `env(safe-area-inset-*)`.
+- No celular a navegação é a barra inferior (`Layout.tsx`); o `icon` do módulo é um SVG de `core/icons.tsx`
+  (usa `currentColor`), não texto.
+- Conferir em 360 px, em tela larga e nos temas claro e escuro. Rota nova entra na lista `ROUTES` de
+  `web/e2e/responsive.spec.ts` (API simulada em `e2e/mock-api.ts`). O CI ainda não roda esse teste.
+
 ## App instalável (PWA)
 
-- Premissa: toda tela nova DEVE funcionar também no **app instalado** (princípio VII da constituição).
+- Premissa: toda tela nova DEVE funcionar também no **app instalado** (princípio VII da constituição, junto com a responsividade).
 - `web/sw.template.js` vira `sw.js` no build (plugin em `web/vite.config.ts`, com a lista de arquivos e a versão).
   O service worker guarda só a interface; **nunca `/api` nem `/up`**, nem credenciais. A versão nova só assume
   quando a pessoa clica em "Atualizar" (`web/src/core/Pwa.tsx`).
