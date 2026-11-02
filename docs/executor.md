@@ -17,14 +17,22 @@ docker build -t acervo-agent executor/
 # 2. Acesso ao GitHub: o executor alcança o que esta conta alcançar
 gh auth login
 
-# 3. Token do Claude para o container
+# 3. Token do Claude para o container (abre o navegador; exige assinatura Pro ou Max)
 claude setup-token
 
 # 4. Token do executor (mostrado uma vez; gerar outro invalida o anterior)
 bin/prod-rails acervo:executor:create
 ```
 
-Crie `~/.config/acervo-executor/config.yml` com os dois tokens:
+O `claude setup-token` mostra o token (`sk-ant-oat01-...`) uma única vez, no terminal, e ele não fica salvo em
+lugar nenhum. Copie na hora; se perder, rode o comando de novo.
+
+Crie `~/.config/acervo-executor/config.yml` (na sua pasta pessoal, não dentro do repositório) com os dois tokens.
+Escreva o `~` sem aspas nos comandos, senão o shell cria uma pasta chamada `~` no diretório atual:
+
+```bash
+mkdir -p ~/.config/acervo-executor
+```
 
 ```yaml
 api_url: https://endereco-do-acervo
@@ -39,7 +47,7 @@ claude_oauth_token: "..."
 
 ```bash
 chmod 600 ~/.config/acervo-executor/config.yml
-executor/bin/acervo-executor check   # confere tudo, sem executar tarefas
+executor/bin/acervo-executor check   # confere tudo, sem executar tarefas (não testa o token do Claude)
 executor/bin/acervo-executor run     # processa a fila até receber Ctrl+C
 ```
 
