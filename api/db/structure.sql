@@ -395,9 +395,12 @@ CREATE TABLE public.initiatives_tasks (
     priority character varying DEFAULT 'medium'::character varying NOT NULL,
     due_on date,
     completed_at timestamp(6) without time zone,
-    searchable tsvector GENERATED ALWAYS AS ((setweight(to_tsvector('simple'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, COALESCE(description, ''::text)), 'B'::"char"))) STORED,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
+    number integer,
+    "position" integer DEFAULT 0 NOT NULL,
+    description_text text,
+    searchable tsvector GENERATED ALWAYS AS ((setweight(to_tsvector('simple'::regconfig, COALESCE((title)::text, ''::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, COALESCE(description_text, ''::text)), 'B'::"char"))) STORED,
     CONSTRAINT initiatives_tasks_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
     CONSTRAINT initiatives_tasks_status_check CHECK (((status)::text = ANY ((ARRAY['todo'::character varying, 'doing'::character varying, 'done'::character varying])::text[])))
 );
@@ -828,10 +831,24 @@ CREATE INDEX index_initiatives_task_links_on_task_id ON public.initiatives_task_
 
 
 --
+-- Name: index_initiatives_tasks_on_initiative_id_and_number; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_initiatives_tasks_on_initiative_id_and_number ON public.initiatives_tasks USING btree (initiative_id, number);
+
+
+--
 -- Name: index_initiatives_tasks_on_initiative_id_and_status; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_initiatives_tasks_on_initiative_id_and_status ON public.initiatives_tasks USING btree (initiative_id, status);
+
+
+--
+-- Name: index_initiatives_tasks_on_board_order; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_initiatives_tasks_on_board_order ON public.initiatives_tasks USING btree (initiative_id, status, "position");
 
 
 --
@@ -955,6 +972,7 @@ ALTER TABLE ONLY public.initiatives_tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261102000001'),
 ('20261101000003'),
 ('20261101000002'),
 ('20261101000001'),

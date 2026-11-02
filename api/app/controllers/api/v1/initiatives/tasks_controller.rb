@@ -2,18 +2,20 @@ module Api
   module V1
     module Initiatives
       class TasksController < ApplicationController
-        # A tela agrupa as tarefas por status, então a lista vem inteira, com um teto de segurança.
+        # O quadro mostra todas as colunas de uma vez, então a lista vem inteira, com um teto de segurança.
         LIMIT = 1_000
 
         before_action :set_initiative, only: %i[index create]
-        before_action :set_task, only: %i[update destroy]
+        before_action :set_task, only: %i[update destroy move]
 
-        # GET /api/v1/initiatives/initiatives/:initiative_id/tasks?q=termo&status=todo&milestone_id=1|none
+        # GET /api/v1/initiatives/initiatives/:initiative_id/tasks?q=termo&status=todo&priority=high&number=12&milestone_id=1|none
         def index
           scope = @initiative.tasks.ordered
           scope = scope.where(status: params[:status]) if params[:status].present?
+          scope = scope.where(priority: params[:priority]) if params[:priority].present?
+          scope = scope.where(number: params[:number].to_i) if params[:number].present?
           scope = scope.in_milestone(params[:milestone_id]) if params[:milestone_id].present?
-          scope = scope.search(params[:q]) if params[:q].present?
+          scope = scope.search(params[:q]).reorder(nil).ordered if params[:q].present?
 
           total = scope.unscope(:order).count
           tasks = scope.limit(LIMIT).to_a
@@ -29,6 +31,19 @@ module Api
 
         def update
           @task.update(task_params) ? render(json: serialize(@task)) : render_errors(@task)
+        end
+
+        # PATCH /api/v1/initiatives/tasks/:id/move { status:, position:, before_id: }
+        # Muda a coluna e a posição de uma vez; a ordem fica salva.
+        def move
+          status = params[:status].to_s
+          unless ::Initiatives::Task::STATUSES.value?(status)
+            return render json: { errors: [ "Status inválido" ], fields: { status: [ "é inválido" ] } },
+                          status: :unprocessable_entity
+          end
+
+          @task.move_to(status, index: params[:position].presence&.to_i, before_id: params[:before_id].presence)
+          render json: serialize(@task)
         end
 
         def destroy
@@ -59,7 +74,7 @@ module Api
 
         def serialize(task, extras = extras_for([ task.id ]))
           run = extras[:runs][task.id]
-          task.as_json(only: %i[id initiative_id milestone_id title description status priority due_on
+          task.as_json(only: %i[id initiative_id milestone_id number position title description status priority due_on
                                 completed_at created_at updated_at]).merge(
             images_count: extras[:images].fetch(task.id, 0),
             links_count: extras[:links].fetch(task.id, 0),
