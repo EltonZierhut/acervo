@@ -58,7 +58,9 @@ Registros de cada execução: `~/.local/state/acervo-executor/runs/`.
 Em uma iniciativa, informe o repositório na aba **Detalhes**. O executor confere o acesso na próxima consulta, em até 30 segundos.
 A conta do `gh` precisa ter permissão de escrita. Em organizações, confira se as regras delas permitem enviar o código à IA.
 
-A imagem padrão traz Git, Node, Ruby, Python e ferramentas de compilação. Se um projeto precisar de mais para rodar os testes, crie uma imagem a
+A imagem padrão traz Git, Node 22, Ruby 3.3, Python, ferramentas de compilação e PostgreSQL 16. O banco é ligado a cada execução em
+`localhost:5432` (usuário `postgres`, sem senha), então a IA consegue rodar os testes do Rails do próprio Acervo. Depois de atualizar o
+repositório, refaça a imagem (`docker build -t acervo-agent executor/`). Se um projeto precisar de mais para rodar os testes, crie uma imagem a
 partir dela e indique em `images`. Quando os testes não rodam, o PR informa isso.
 
 ## O que protege o que
