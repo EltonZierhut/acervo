@@ -13,6 +13,11 @@ const snippet = {
   content: 'const x = 1\n' + 'const texto = "uma linha de código muito longa para testar a rolagem horizontal dentro do editor"\n'.repeat(20),
   description: 'Descrição da nota',
 }
+const bragEntry = {
+  id: 1, title: long, achieved_on: '2026-01-01', description: '**Texto** em _Markdown_\n\n- item um\n- item dois', category: 'Entrega',
+  tags: ['um', 'dois'], impact: 'Impacto', metrics: '-30%', evidence_links: ['https://exemplo.com/evidencia'], project: 'Acervo',
+  created_at: now, updated_at: now,
+}
 const initiative = {
   id: 1, name: long, status: 'active', priority: 'high', starts_on: '2026-01-01', due_on: '2026-02-01',
   tags: ['a', 'b'], context: { id: 1, name: 'Pessoal', color: '#2f6fed' }, progress, created_at: now, updated_at: now,
@@ -38,6 +43,8 @@ function respond(method: string, path: string): { status: number; body?: unknown
   if (path === '/session') return method === 'GET' ? { status: 200, body: { user: { id: 1, email_address: 'pessoa@exemplo.com' } } } : { status: 204 }
   if (path === '/codes/snippets') return { status: 200, body: { data: [snippet], meta: page1 } }
   if (path.startsWith('/codes/snippets/')) return { status: 200, body: snippet }
+  if (path === '/brag/entries') return { status: 200, body: { data: [bragEntry], meta: page1 } }
+  if (path.startsWith('/brag/entries/')) return { status: 200, body: bragEntry }
   if (path === '/initiatives/contexts') return { status: 200, body: [context] }
   if (path === '/initiatives/initiatives') return { status: 200, body: { data: [initiative], meta: page1 } }
   if (/^\/initiatives\/initiatives\/\d+$/.test(path)) return { status: 200, body: initiative }
