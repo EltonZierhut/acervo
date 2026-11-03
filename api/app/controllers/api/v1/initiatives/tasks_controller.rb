@@ -42,7 +42,11 @@ module Api
                           status: :unprocessable_entity
           end
 
+          previous = @task.status
           @task.move_to(status, index: params[:position].presence&.to_i, before_id: params[:before_id].presence)
+          # Ao entrar em Executando, a tarefa vai para a fila de desenvolvimento. Se não puder entrar
+          # (sem descrição, sem repositório, já na fila...), a movimentação vale mesmo assim.
+          ::Initiatives::Run.enqueue(@task) if status == "doing" && previous != "doing"
           render json: serialize(@task)
         end
 
