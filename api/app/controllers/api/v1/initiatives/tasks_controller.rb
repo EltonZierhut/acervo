@@ -78,7 +78,7 @@ module Api
                                 completed_at created_at updated_at]).merge(
             images_count: extras[:images].fetch(task.id, 0),
             links_count: extras[:links].fetch(task.id, 0),
-            latest_run: run&.as_json(only: %i[id status pull_request_url])
+            latest_run: run&.as_json(only: %i[id status pull_request_url repository enqueued_at started_at finished_at])
           )
         end
       end

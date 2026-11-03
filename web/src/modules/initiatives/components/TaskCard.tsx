@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { formatDate, isOverdue, PRIORITY_LABELS } from '../labels'
+import { formatDate, formatDateTime, isOverdue, PRIORITY_LABELS, RUN_STATUS_LABELS } from '../labels'
 import type { Milestone, Task } from '../types'
 
 interface ViewProps {
@@ -9,6 +9,7 @@ interface ViewProps {
 }
 
 export function TaskCardView({ task, milestone }: ViewProps) {
+  const run = task.latest_run
   const overdue = isOverdue(task.due_on, task.status === 'done')
   return (
     <>
@@ -24,6 +25,26 @@ export function TaskCardView({ task, milestone }: ViewProps) {
         )}
         {task.description && <span className="muted" title="Tem descrição" aria-label="Tem descrição">≡</span>}
       </span>
+      {run && run.status === 'pr_open' && (
+        <span className="card-run small muted">
+          {RUN_STATUS_LABELS[run.status]} {formatDateTime(run.finished_at ?? run.started_at ?? run.enqueued_at)} · {run.repository}
+          {run.pull_request_url && (
+            <>
+              {' · '}
+              <a
+                href={run.pull_request_url}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(event) => event.stopPropagation()}
+                onPointerDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => event.stopPropagation()}
+              >
+                Abrir PR
+              </a>
+            </>
+          )}
+        </span>
+      )}
     </>
   )
 }

@@ -374,6 +374,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .task-card.done .card-title { color: var(--muted); }
 .card-title { display: -webkit-box; -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .card-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
+.card-run { display: block; overflow-wrap: anywhere; }
 .card-milestone { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .board-add { border: none; background: none; text-align: left; color: var(--muted); padding: 6px 4px; }
 .board-add:hover { color: var(--accent); }
