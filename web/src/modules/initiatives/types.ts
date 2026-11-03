@@ -97,7 +97,15 @@ export interface Task {
   completed_at: string | null
   images_count: number
   links_count: number
-  latest_run: { id: number; status: RunStatus; pull_request_url: string | null } | null
+  latest_run: {
+    id: number
+    status: RunStatus
+    pull_request_url: string | null
+    repository: string
+    enqueued_at: string
+    started_at: string | null
+    finished_at: string | null
+  } | null
   created_at: string
   updated_at: string
 }

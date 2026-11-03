@@ -175,9 +175,9 @@ CREATE TABLE public.initiatives_initiatives (
     repository_checked_at timestamp(6) without time zone,
     last_task_number integer DEFAULT 0 NOT NULL,
     CONSTRAINT initiatives_dates_check CHECK (((due_on IS NULL) OR (starts_on IS NULL) OR (due_on >= starts_on))),
-    CONSTRAINT initiatives_initiatives_repository_status_check CHECK (((repository_status)::text = ANY ((ARRAY['unverified'::character varying, 'valid'::character varying, 'invalid'::character varying])::text[]))),
-    CONSTRAINT initiatives_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
-    CONSTRAINT initiatives_status_check CHECK (((status)::text = ANY ((ARRAY['idea'::character varying, 'planned'::character varying, 'active'::character varying, 'paused'::character varying, 'done'::character varying])::text[])))
+    CONSTRAINT initiatives_initiatives_repository_status_check CHECK (((repository_status)::text = ANY (ARRAY[('unverified'::character varying)::text, ('valid'::character varying)::text, ('invalid'::character varying)::text]))),
+    CONSTRAINT initiatives_priority_check CHECK (((priority)::text = ANY (ARRAY[('low'::character varying)::text, ('medium'::character varying)::text, ('high'::character varying)::text]))),
+    CONSTRAINT initiatives_status_check CHECK (((status)::text = ANY (ARRAY[('idea'::character varying)::text, ('planned'::character varying)::text, ('active'::character varying)::text, ('paused'::character varying)::text, ('done'::character varying)::text])))
 );
 
 
@@ -289,7 +289,7 @@ CREATE TABLE public.initiatives_runs (
     branch character varying,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
-    CONSTRAINT initiatives_runs_status_check CHECK (((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'waiting'::character varying, 'pr_open'::character varying, 'no_changes'::character varying, 'failed'::character varying, 'canceled'::character varying])::text[])))
+    CONSTRAINT initiatives_runs_status_check CHECK (((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text, ('waiting'::character varying)::text, ('pr_open'::character varying)::text, ('no_changes'::character varying)::text, ('failed'::character varying)::text, ('canceled'::character varying)::text])))
 );
 
 
@@ -402,8 +402,8 @@ CREATE TABLE public.initiatives_tasks (
     "position" integer DEFAULT 0 NOT NULL,
     description_text text,
     searchable tsvector GENERATED ALWAYS AS ((setweight(to_tsvector('simple'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, COALESCE(description_text, ''::text)), 'B'::"char"))) STORED,
-    CONSTRAINT initiatives_tasks_priority_check CHECK (((priority)::text = ANY ((ARRAY['low'::character varying, 'medium'::character varying, 'high'::character varying])::text[]))),
-    CONSTRAINT initiatives_tasks_status_check CHECK (((status)::text = ANY ((ARRAY['todo'::character varying, 'doing'::character varying, 'done'::character varying])::text[])))
+    CONSTRAINT initiatives_tasks_priority_check CHECK (((priority)::text = ANY (ARRAY[('low'::character varying)::text, ('medium'::character varying)::text, ('high'::character varying)::text]))),
+    CONSTRAINT initiatives_tasks_status_check CHECK (((status)::text = ANY (ARRAY[('todo'::character varying)::text, ('doing'::character varying)::text, ('done'::character varying)::text])))
 );
 
 
@@ -807,7 +807,7 @@ CREATE INDEX index_initiatives_runs_on_task_id_and_id ON public.initiatives_runs
 -- Name: index_initiatives_runs_one_active_per_task; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE UNIQUE INDEX index_initiatives_runs_one_active_per_task ON public.initiatives_runs USING btree (task_id) WHERE ((status)::text = ANY ((ARRAY['queued'::character varying, 'running'::character varying, 'waiting'::character varying])::text[]));
+CREATE UNIQUE INDEX index_initiatives_runs_one_active_per_task ON public.initiatives_runs USING btree (task_id) WHERE ((status)::text = ANY (ARRAY[('queued'::character varying)::text, ('running'::character varying)::text, ('waiting'::character varying)::text]));
 
 
 --
