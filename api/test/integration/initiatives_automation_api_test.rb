@@ -174,4 +174,23 @@ class InitiativesAutomationApiTest < ActionDispatch::IntegrationTest
     assert_equal true, json["available"]
     assert_nil json["token_digest"]
   end
+
+  # Lane Executando
+
+  test "mover para Executando envia a tarefa para a fila" do
+    patch "#{BASE}/tasks/#{@task.id}/move", as: :json, params: { status: "doing" }
+    assert_response :success
+    assert_equal [ "queued" ], @task.runs.pluck(:status)
+
+    patch "#{BASE}/tasks/#{@task.id}/move", as: :json, params: { status: "doing", position: 0 }
+    assert_equal 1, @task.runs.count
+  end
+
+  test "mover para Executando sem descrição move mas não enfileira" do
+    task = @initiative.tasks.create!(title: "Sem descrição")
+    patch "#{BASE}/tasks/#{task.id}/move", as: :json, params: { status: "doing" }
+    assert_response :success
+    assert_equal "doing", task.reload.status
+    assert_equal 0, task.runs.count
+  end
 end
