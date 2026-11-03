@@ -8,3 +8,7 @@ shared:
       name: Iniciativas
       description: Projetos de qualquer tipo, com marcos e tarefas
       enabled: true
+    - key: brag
+      name: Brag document
+      description: Conquistas registradas para lembrar na avaliação
+      enabled: true

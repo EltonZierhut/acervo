@@ -49,6 +49,47 @@ CREATE TABLE public.ar_internal_metadata (
 
 
 --
+-- Name: brag_entries; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.brag_entries (
+    id bigint NOT NULL,
+    title character varying NOT NULL,
+    achieved_on date NOT NULL,
+    description text,
+    category character varying,
+    tags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    impact text,
+    metrics text,
+    evidence_links character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    project character varying,
+    tags_text text GENERATED ALWAYS AS (public.immutable_array_to_string((tags)::text[], ' '::text)) STORED,
+    searchable tsvector GENERATED ALWAYS AS (((((((setweight(to_tsvector('simple'::regconfig, (COALESCE(title, ''::character varying))::text), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, (COALESCE(category, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, (COALESCE(project, ''::character varying))::text), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(description, ''::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(impact, ''::text)), 'C'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(metrics, ''::text)), 'C'::"char"))) STORED,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: brag_entries_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.brag_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: brag_entries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.brag_entries_id_seq OWNED BY public.brag_entries.id;
+
+
+--
 -- Name: codes_snippets; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -503,6 +544,13 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: brag_entries id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brag_entries ALTER COLUMN id SET DEFAULT nextval('public.brag_entries_id_seq'::regclass);
+
+
+--
 -- Name: codes_snippets id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -592,6 +640,14 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 ALTER TABLE ONLY public.ar_internal_metadata
     ADD CONSTRAINT ar_internal_metadata_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: brag_entries brag_entries_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.brag_entries
+    ADD CONSTRAINT brag_entries_pkey PRIMARY KEY (id);
 
 
 --
@@ -696,6 +752,20 @@ ALTER TABLE ONLY public.sessions
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: index_brag_entries_on_achieved_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_brag_entries_on_achieved_on ON public.brag_entries USING btree (achieved_on);
+
+
+--
+-- Name: index_brag_entries_on_searchable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_brag_entries_on_searchable ON public.brag_entries USING gin (searchable);
 
 
 --
@@ -973,6 +1043,7 @@ ALTER TABLE ONLY public.initiatives_tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261103000001'),
 ('20261102000001'),
 ('20261101000003'),
 ('20261101000002'),

@@ -209,6 +209,20 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
  * alvos de toque de 44 px, campos de 16 px (o iPhone dá zoom abaixo disso), modais em tela cheia,
  * painéis lista + item um de cada vez e áreas seguras (viewport-fit=cover no index.html).
  */
+/* Módulo Brag document */
+.quick-add { margin-bottom: 14px; }
+.quick-add-row { display: flex; gap: 8px; }
+.quick-add-row input { flex: 1; min-width: 0; }
+.label-block { display: flex; flex-direction: column; gap: 5px; }
+.label-line { display: flex; justify-content: space-between; align-items: center; font-weight: 500; font-size: .9rem; }
+.markdown { overflow-wrap: anywhere; }
+.markdown > :first-child { margin-top: 0; }
+.markdown > :last-child { margin-bottom: 0; }
+.markdown pre { overflow-x: auto; }
+.markdown img { max-width: 100%; }
+.markdown-preview { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; min-height: 8em; }
+.pager { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 14px; }
+
 @media (max-width: 720px) {
   :root { --touch: 44px; --bottom-bar: calc(60px + env(safe-area-inset-bottom)); }
 
@@ -243,9 +257,10 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
   .btn, button, select, input:not([type=checkbox]):not([type=radio]), .tab, .back, summary, .note-item, .file-button, .link-button {
     min-height: var(--touch);
   }
-  .btn, .small-btn, .tab, .chip, .board-add, .task-title, .link-button, .modal-close, .rich-toolbar button, .swatch, .thumb {
+  .btn, .small-btn, .tab, .chip, .board-add, .task-title, .brag-title, .link-button, .modal-close, .rich-toolbar button, .swatch, .thumb {
     min-width: var(--touch);
   }
+  .brag-title { display: inline-flex; align-items: center; }
   .btn, .small-btn, .chip, .file-button, .link-button { display: inline-flex; align-items: center; justify-content: center; }
   .back { display: inline-flex; align-items: center; margin-bottom: 4px; }
   .small-btn { padding: 7px 14px; }

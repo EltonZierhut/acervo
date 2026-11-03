@@ -12,6 +12,11 @@ Rails.application.routes.draw do
         resources :snippets
       end
 
+      # Módulo: Brag document
+      namespace :brag do
+        resources :entries
+      end
+
       # Módulo: Iniciativas. Marcos e tarefas são criados e listados dentro da iniciativa e
       # alterados pelo próprio id (/initiatives/tasks/:id).
       namespace :initiatives do
