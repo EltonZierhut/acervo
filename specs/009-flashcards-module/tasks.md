@@ -43,5 +43,5 @@
 
 - [X] T019 Rotas novas em web/e2e/responsive.spec.ts e respostas simuladas em e2e/mock-api.ts
 - [X] T020 `npm run build`, `npm run lint` e `npm run test:e2e` nas rotas novas (360 px e tela larga, claro e escuro)
-- [ ] T021 `bin/rails test` (roda no CI do PR)
+- [X] T021 `bin/rails test` (passou no CI do PR #23)
 - [ ] T022 Conferir no app instalado e no celular (roteiro de specs/008-pwa-installable/quickstart.md)
