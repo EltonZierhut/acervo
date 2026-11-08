@@ -127,6 +127,161 @@ ALTER SEQUENCE public.codes_snippets_id_seq OWNED BY public.codes_snippets.id;
 
 
 --
+-- Name: flashcards_cards; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flashcards_cards (
+    id bigint NOT NULL,
+    note_id bigint NOT NULL,
+    ordinal integer DEFAULT 0 NOT NULL,
+    state character varying DEFAULT 'new'::character varying NOT NULL,
+    due_at timestamp(6) without time zone,
+    interval_days integer DEFAULT 0 NOT NULL,
+    ease integer DEFAULT 2500 NOT NULL,
+    step_index integer DEFAULT 0 NOT NULL,
+    reps integer DEFAULT 0 NOT NULL,
+    lapses integer DEFAULT 0 NOT NULL,
+    last_reviewed_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT flashcards_cards_ordinal_valid CHECK ((ordinal = ANY (ARRAY[0, 1]))),
+    CONSTRAINT flashcards_cards_state_valid CHECK (((state)::text = ANY ((ARRAY['new'::character varying, 'learning'::character varying, 'review'::character varying, 'relearning'::character varying])::text[])))
+);
+
+
+--
+-- Name: flashcards_cards_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flashcards_cards_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flashcards_cards_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flashcards_cards_id_seq OWNED BY public.flashcards_cards.id;
+
+
+--
+-- Name: flashcards_decks; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flashcards_decks (
+    id bigint NOT NULL,
+    name character varying NOT NULL,
+    description text,
+    new_per_day integer DEFAULT 20 NOT NULL,
+    reviews_per_day integer DEFAULT 200 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT flashcards_decks_new_per_day_range CHECK (((new_per_day >= 0) AND (new_per_day <= 9999))),
+    CONSTRAINT flashcards_decks_reviews_per_day_range CHECK (((reviews_per_day >= 0) AND (reviews_per_day <= 9999)))
+);
+
+
+--
+-- Name: flashcards_decks_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flashcards_decks_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flashcards_decks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flashcards_decks_id_seq OWNED BY public.flashcards_decks.id;
+
+
+--
+-- Name: flashcards_notes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flashcards_notes (
+    id bigint NOT NULL,
+    deck_id bigint NOT NULL,
+    note_type character varying DEFAULT 'basic'::character varying NOT NULL,
+    front text NOT NULL,
+    back text NOT NULL,
+    tags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    suspended boolean DEFAULT false NOT NULL,
+    tags_text text GENERATED ALWAYS AS (public.immutable_array_to_string((tags)::text[], ' '::text)) STORED,
+    searchable tsvector GENERATED ALWAYS AS (((setweight(to_tsvector('simple'::regconfig, COALESCE(front, ''::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(back, ''::text)), 'B'::"char"))) STORED,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT flashcards_notes_note_type_valid CHECK (((note_type)::text = ANY ((ARRAY['basic'::character varying, 'basic_reversed'::character varying])::text[])))
+);
+
+
+--
+-- Name: flashcards_notes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flashcards_notes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flashcards_notes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flashcards_notes_id_seq OWNED BY public.flashcards_notes.id;
+
+
+--
+-- Name: flashcards_reviews; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.flashcards_reviews (
+    id bigint NOT NULL,
+    card_id bigint NOT NULL,
+    rating integer NOT NULL,
+    state_before character varying NOT NULL,
+    interval_before integer DEFAULT 0 NOT NULL,
+    interval_after integer DEFAULT 0 NOT NULL,
+    ease_after integer NOT NULL,
+    duration_ms integer,
+    reviewed_at timestamp(6) without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT flashcards_reviews_rating_range CHECK (((rating >= 1) AND (rating <= 4)))
+);
+
+
+--
+-- Name: flashcards_reviews_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.flashcards_reviews_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: flashcards_reviews_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.flashcards_reviews_id_seq OWNED BY public.flashcards_reviews.id;
+
+
+--
 -- Name: initiatives_contexts; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -558,6 +713,34 @@ ALTER TABLE ONLY public.codes_snippets ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: flashcards_cards id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_cards ALTER COLUMN id SET DEFAULT nextval('public.flashcards_cards_id_seq'::regclass);
+
+
+--
+-- Name: flashcards_decks id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_decks ALTER COLUMN id SET DEFAULT nextval('public.flashcards_decks_id_seq'::regclass);
+
+
+--
+-- Name: flashcards_notes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_notes ALTER COLUMN id SET DEFAULT nextval('public.flashcards_notes_id_seq'::regclass);
+
+
+--
+-- Name: flashcards_reviews id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_reviews ALTER COLUMN id SET DEFAULT nextval('public.flashcards_reviews_id_seq'::regclass);
+
+
+--
 -- Name: initiatives_contexts id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -656,6 +839,38 @@ ALTER TABLE ONLY public.brag_entries
 
 ALTER TABLE ONLY public.codes_snippets
     ADD CONSTRAINT codes_snippets_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flashcards_cards flashcards_cards_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_cards
+    ADD CONSTRAINT flashcards_cards_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flashcards_decks flashcards_decks_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_decks
+    ADD CONSTRAINT flashcards_decks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flashcards_notes flashcards_notes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_notes
+    ADD CONSTRAINT flashcards_notes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: flashcards_reviews flashcards_reviews_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_reviews
+    ADD CONSTRAINT flashcards_reviews_pkey PRIMARY KEY (id);
 
 
 --
@@ -794,6 +1009,55 @@ CREATE INDEX index_codes_snippets_on_tags ON public.codes_snippets USING gin (ta
 --
 
 CREATE INDEX index_codes_snippets_on_title ON public.codes_snippets USING gin (title public.gin_trgm_ops);
+
+
+--
+-- Name: index_flashcards_cards_on_note_id_and_ordinal; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_flashcards_cards_on_note_id_and_ordinal ON public.flashcards_cards USING btree (note_id, ordinal);
+
+
+--
+-- Name: index_flashcards_cards_on_state_and_due_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flashcards_cards_on_state_and_due_at ON public.flashcards_cards USING btree (state, due_at);
+
+
+--
+-- Name: index_flashcards_decks_on_lower_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_flashcards_decks_on_lower_name ON public.flashcards_decks USING btree (lower((name)::text));
+
+
+--
+-- Name: index_flashcards_notes_on_deck_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flashcards_notes_on_deck_id ON public.flashcards_notes USING btree (deck_id);
+
+
+--
+-- Name: index_flashcards_notes_on_searchable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flashcards_notes_on_searchable ON public.flashcards_notes USING gin (searchable);
+
+
+--
+-- Name: index_flashcards_reviews_on_card_id_and_reviewed_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flashcards_reviews_on_card_id_and_reviewed_at ON public.flashcards_reviews USING btree (card_id, reviewed_at);
+
+
+--
+-- Name: index_flashcards_reviews_on_reviewed_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_flashcards_reviews_on_reviewed_at ON public.flashcards_reviews USING btree (reviewed_at);
 
 
 --
@@ -973,6 +1237,14 @@ ALTER TABLE ONLY public.initiatives_tasks
 
 
 --
+-- Name: flashcards_cards fk_rails_0d104d912c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_cards
+    ADD CONSTRAINT fk_rails_0d104d912c FOREIGN KEY (note_id) REFERENCES public.flashcards_notes(id) ON DELETE CASCADE;
+
+
+--
 -- Name: initiatives_task_links fk_rails_0e007b284e; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -986,6 +1258,14 @@ ALTER TABLE ONLY public.initiatives_task_links
 
 ALTER TABLE ONLY public.initiatives_milestones
     ADD CONSTRAINT fk_rails_2efaed1aab FOREIGN KEY (initiative_id) REFERENCES public.initiatives_initiatives(id) ON DELETE CASCADE;
+
+
+--
+-- Name: flashcards_reviews fk_rails_62f003ae2b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_reviews
+    ADD CONSTRAINT fk_rails_62f003ae2b FOREIGN KEY (card_id) REFERENCES public.flashcards_cards(id) ON DELETE CASCADE;
 
 
 --
@@ -1029,6 +1309,14 @@ ALTER TABLE ONLY public.initiatives_initiatives
 
 
 --
+-- Name: flashcards_notes fk_rails_bc098bba13; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.flashcards_notes
+    ADD CONSTRAINT fk_rails_bc098bba13 FOREIGN KEY (deck_id) REFERENCES public.flashcards_decks(id) ON DELETE CASCADE;
+
+
+--
 -- Name: initiatives_tasks fk_rails_e855c4fa67; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1043,6 +1331,7 @@ ALTER TABLE ONLY public.initiatives_tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261107000001'),
 ('20261103000001'),
 ('20261102000001'),
 ('20261101000003'),

@@ -12,3 +12,7 @@ shared:
       name: Brag document
       description: Conquistas registradas para lembrar na avaliação
       enabled: true
+    - key: flashcards
+      name: Flashcards
+      description: Cartões de estudo com repetição espaçada, no estilo do Anki
+      enabled: true

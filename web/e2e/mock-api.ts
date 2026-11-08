@@ -39,12 +39,35 @@ const run = {
   summary: null, pull_request_url: null, questions: [{ id: 1, body: 'Pergunta?', answer: null, answered_at: null }],
 }
 
+const due = { new: 12, learning: 3, review: 140 }
+const deck = {
+  id: 1, name: long, description: 'Descrição do baralho', new_per_day: 20, reviews_per_day: 200, card_count: 1234, due,
+  created_at: now, updated_at: now,
+}
+const flashcard = { id: 1, ordinal: 0, state: 'review', due_at: now, interval_days: 12, ease: 2500, reps: 5, lapses: 1 }
+const flashcardNote = {
+  id: 1, deck_id: 1, note_type: 'basic_reversed', front: long, back: '```\n' + 'x'.repeat(200) + '\n```', tags: ['tag-longa'],
+  suspended: false, cards: [flashcard, { ...flashcard, id: 2, ordinal: 1, state: 'new' }], created_at: now, updated_at: now,
+}
+const study = {
+  deck: { id: 1, name: long }, counts: due, next_due_at: null, due_tomorrow: 8,
+  card: {
+    id: 1, note_id: 1, ordinal: 0, state: 'review', question: long, answer: flashcardNote.back, tags: ['tag-longa'],
+    intervals: { 1: '10 min', 2: '15 dias', 3: '1,2 mês', 4: '3,5 meses' },
+  },
+}
+
 function respond(method: string, path: string): { status: number; body?: unknown } {
   if (path === '/session') return method === 'GET' ? { status: 200, body: { user: { id: 1, email_address: 'pessoa@exemplo.com' } } } : { status: 204 }
   if (path === '/codes/snippets') return { status: 200, body: { data: [snippet], meta: page1 } }
   if (path.startsWith('/codes/snippets/')) return { status: 200, body: snippet }
   if (path === '/brag/entries') return { status: 200, body: { data: [bragEntry], meta: page1 } }
   if (path.startsWith('/brag/entries/')) return { status: 200, body: bragEntry }
+  if (path === '/flashcards/decks') return { status: 200, body: { data: [deck] } }
+  if (/^\/flashcards\/decks\/\d+$/.test(path)) return { status: 200, body: deck }
+  if (/^\/flashcards\/decks\/\d+\/notes$/.test(path)) return { status: 200, body: { data: [flashcardNote], meta: page1 } }
+  if (/^\/flashcards\/decks\/\d+\/study$/.test(path)) return { status: 200, body: study }
+  if (/^\/flashcards\/notes\/\d+$/.test(path)) return { status: 200, body: flashcardNote }
   if (path === '/initiatives/contexts') return { status: 200, body: [context] }
   if (path === '/initiatives/initiatives') return { status: 200, body: { data: [initiative], meta: page1 } }
   if (/^\/initiatives\/initiatives\/\d+$/.test(path)) return { status: 200, body: initiative }
