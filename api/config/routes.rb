@@ -50,6 +50,17 @@ Rails.application.routes.draw do
         end
       end
 
+      # Módulo: Flashcards. Notas são criadas e listadas dentro do baralho e alteradas pelo próprio id.
+      namespace :flashcards do
+        resources :decks do
+          resources :notes, shallow: true, only: %i[index create show update destroy] do
+            post :reset, on: :member
+          end
+        end
+        get "decks/:deck_id/study", to: "study#show", as: :deck_study
+        post "cards/:id/review", to: "study#review", as: :card_review
+      end
+
       # Próximos módulos entram aqui, cada um no seu namespace.
     end
   end
