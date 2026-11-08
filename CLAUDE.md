@@ -1,7 +1,7 @@
 # Acervo
 
 Organizador pessoal modular. Backend Rails 8 API + PostgreSQL em `api/`, frontend React +
-TypeScript (Vite) em `web/`. Módulos: **Códigos** (notas e scripts para colar, com busca e salvamento automático) e
+TypeScript (Vite) em `web/`. Módulos: **Códigos** (notas e scripts para colar, com busca e salvamento automático),
 **Iniciativas** (projetos de qualquer tipo, com contextos, marcos e tarefas; spec 005) e **Flashcards** (estudo por repetição espaçada, no estilo do Anki; spec 009). As tarefas podem ser
 desenvolvidas por IA até o PR, por um programa executor em `executor/`, na máquina do usuário (spec 006).
 
