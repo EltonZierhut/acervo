@@ -45,7 +45,7 @@ bin/acervo-executor run              # processa a fila
 docker build -t acervo .             # imagem única: React compilado + Rails
 bin/setup-gcp                        # configura Google Cloud e GitHub (uma vez; guia: docs/deploy-gcp.md)
 bin/deploy-gcp                       # publica no Cloud Run à mão (o normal é pelo merge na main)
-bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (Cloud SQL, pelo proxy)
+bin/prod-rails acervo:user:create    # tarefa do Rails no banco de produção (Neon)
 ```
 
 ## Produção

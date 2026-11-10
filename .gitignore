@@ -13,3 +13,4 @@ api/public/assets/
 
 # Credenciais temporárias do google-github-actions/auth (criadas na raiz durante o deploy)
 gha-creds-*.json
+.neon

@@ -75,7 +75,7 @@ A senha é digitada sem aparecer na tela e precisa ter pelo menos 12 caracteres.
 ## Publicação
 
 O Acervo é publicado como um único serviço no **Google Cloud Run** (São Paulo), com banco no
-**Cloud SQL**, que tem custo mensal fixo. O `Dockerfile` da raiz compila o React e monta a imagem do Rails, que entrega a interface
+**Neon** (PostgreSQL serverless, também em São Paulo). O `Dockerfile` da raiz compila o React e monta a imagem do Rails, que entrega a interface
 e a API no mesmo endereço.
 
 Depois de configurado, cada merge na `main` é publicado pelo GitHub Actions, se os testes passarem.

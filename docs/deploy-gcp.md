@@ -1,6 +1,6 @@
-# Publicar o Acervo no Google Cloud (Cloud Run + Cloud SQL)
+# Publicar o Acervo no Google Cloud (Cloud Run + Neon)
 
-O app roda no **Google Cloud Run** e o banco PostgreSQL no **Cloud SQL**, os dois em **São Paulo**. Depois
+O app roda no **Google Cloud Run** e o banco PostgreSQL no **Neon**, os dois em **São Paulo**. Depois
 de configurado, **cada merge na `main` é publicado sozinho** pelo GitHub Actions, se os testes passarem.
 
 ```
@@ -10,7 +10,8 @@ merge na main  →  CI  →  imagem no Artifact Registry  →  Cloud Run  →  c
 
 A configuração é feita uma vez e leva de 20 a 30 minutos.
 
-> **O banco tem custo fixo:** o Cloud SQL fica ligado e cobra mesmo sem uso. Veja o passo 7.
+> **O banco é serverless:** o Neon desliga sozinho quando não está em uso e o uso pessoal cabe no plano
+> gratuito. Veja o passo 8.
 
 > Os comandos usam bash. No Windows, use o WSL ou o Git Bash.
 
@@ -28,7 +29,19 @@ A configuração é feita uma vez e leva de 20 a 30 minutos.
 
 ---
 
-## 2. Configurar o Google Cloud e o GitHub
+## 2. Banco de dados no Neon
+
+1. Crie a conta em https://neon.com e um projeto na região **AWS São Paulo (`aws-sa-east-1`)**, a mesma
+   do Cloud Run. Outra região deixa cada consulta mais lenta.
+2. No projeto, abra *Connect*, escolha a branch `production` e **desligue o connection pooling**. Copie a
+   connection string direta (o host não tem `-pooler`). Ela termina com `sslmode=require`.
+
+A conexão direta é a recomendada aqui: o serviço tem uma instância só, com poucas conexões, e as
+migrations usam advisory locks, que não funcionam pelo pooler.
+
+---
+
+## 3. Configurar o Google Cloud e o GitHub
 
 Instale o [Google Cloud CLI (`gcloud`)](https://cloud.google.com/sdk/docs/install) e o
 [GitHub CLI (`gh`)](https://cli.github.com). Depois, na raiz do repositório:
@@ -39,14 +52,11 @@ gh auth login
 GCP_PROJECT=SEU_PROJETO_ID bin/setup-gcp
 ```
 
-Ele cria:
+Na primeira vez ele pede a connection string do Neon (passo 2), sem mostrá-la na tela. Ele cria:
 
-- a instância `acervo-db` no Cloud SQL (PostgreSQL 16, a mesma versão de desenvolvimento e do CI), com
-  backups diários mantidos por 7 dias, proteção contra exclusão e o banco e o usuário `acervo`. Ela só
-  aceita conexões pelo conector do Cloud SQL, sem redes autorizadas;
 - o repositório de imagens `acervo`, que apaga imagens com mais de 30 dias e mantém as 5 mais recentes;
-- os segredos `DATABASE_URL` e `SECRET_KEY_BASE` no Secret Manager, com valores gerados na hora;
-- a conta `acervo-runtime`, usada pelo app, que só lê os dois segredos e se conecta ao banco;
+- os segredos `DATABASE_URL` (a connection string do Neon) e `SECRET_KEY_BASE` (gerado na hora) no Secret Manager;
+- a conta `acervo-runtime`, usada pelo app, que só lê os dois segredos;
 - a conta `acervo-deployer`, usada pelo GitHub Actions para publicar;
 - o login do GitHub no Google (Workload Identity Federation), aceito só para a `main` deste
   repositório. Nenhuma chave fica guardada no GitHub;
@@ -55,7 +65,7 @@ Ele cria:
 
 ---
 
-## 3. Primeira publicação
+## 4. Primeira publicação
 
 ```bash
 gh workflow run deploy.yml --ref main
@@ -75,12 +85,11 @@ O que a publicação configura (veja `bin/deploy-gcp`):
 
 ---
 
-## 4. Criar sua conta de acesso
+## 5. Criar sua conta de acesso
 
-Precisa do Docker. O comando se conecta ao banco de produção pelo Cloud SQL Auth Proxy:
+Precisa do Docker. O comando lê a `DATABASE_URL` do Secret Manager e se conecta direto ao Neon:
 
 ```bash
-gcloud auth application-default login   # só na primeira vez
 bin/prod-rails acervo:user:create
 ```
 
@@ -89,7 +98,7 @@ senha depois, use `bin/prod-rails acervo:user:reset_password`.
 
 ---
 
-## 5. Publicar uma nova versão
+## 6. Publicar uma nova versão
 
 Faça o merge do PR na `main`. Acompanhe em *Actions* no GitHub ou com `gh run watch`.
 
@@ -110,7 +119,7 @@ próximo merge na `main` volta a publicar a versão nova.
 
 ---
 
-## 6. Ver logs
+## 7. Ver logs
 
 ```bash
 gcloud run services logs read acervo --region southamerica-east1 --limit 100
@@ -120,46 +129,40 @@ Ou no console: *Cloud Run → acervo → Logs*.
 
 ---
 
-## 7. Custos esperados
+## 8. Custos esperados
 
 | Item | Custo |
 |---|---|
-| Cloud SQL | **pago, sem plano gratuito permanente.** A máquina `db-f1-micro`, o disco de 10 GB e os backups ficam em torno de US$ 10 a 20 por mês em São Paulo (estimativa) |
+| Neon | o plano gratuito cobre o uso pessoal; confira os limites de armazenamento e de horas de computação em https://neon.com/pricing |
 | Cloud Run | dentro do uso gratuito mensal para um usuário (2 milhões de requisições e cotas de CPU e memória). São Paulo tem preço de faixa 2, mas o desconto gratuito vale para todas as regiões. |
 | Artifact Registry (imagens) | pode gerar centavos pelo armazenamento; a limpeza automática mantém poucas imagens |
 | GitHub Actions | gratuito em repositório público |
 
 Confira os valores na [calculadora do Google](https://cloud.google.com/products/calculator) e, depois
-do primeiro mês, na fatura real. Os créditos de conta nova cobrem o início.
+do primeiro mês, na fatura real.
 
-**Comportamento esperado:** o primeiro acesso depois de um tempo sem uso demora alguns segundos (o
-container iniciando). O banco fica sempre ligado. A máquina `db-f1-micro` tem CPU compartilhada e não
-tem SLA do Google: serve para uso pessoal, não para carga alta.
+**Comportamento esperado:** o primeiro acesso depois de um tempo sem uso demora alguns segundos: o
+container do Cloud Run inicia e o Neon, que desliga quando fica parado, volta a ligar.
 
-**Para reduzir o custo:** a instância pode ser desligada quando não for usar o Acervo. O site para de
-funcionar enquanto isso, e o disco e os backups continuam sendo cobrados:
+**Backups:** o Neon permite restaurar a branch para um ponto no tempo dentro da janela de histórico do
+plano (*console → Backup & Restore*). Para guardar uma cópia fora dele:
 
 ```bash
-gcloud sql instances patch acervo-db --activation-policy NEVER    # desliga
-gcloud sql instances patch acervo-db --activation-policy ALWAYS   # liga
+pg_dump --format=custom --file acervo.dump "$(gcloud secrets versions access latest --secret DATABASE_URL)"
 ```
-
-**Backups:** a restauração volta ao backup diário escolhido, e os dados depois dele se perdem. A
-restauração a um ponto no tempo está desligada por custar mais; ative com
-`gcloud sql instances patch acervo-db --enable-point-in-time-recovery` se precisar.
 
 ---
 
-## 8. Problemas comuns
+## 9. Problemas comuns
 
 | Sintoma | Causa provável | Solução |
 |---|---|---|
-| O job `deploy` aparece como ignorado | variáveis do repositório ausentes | passo 2 |
+| O job `deploy` aparece como ignorado | variáveis do repositório ausentes | passo 3 |
 | `unauthorized_client` ou `attribute condition` no login do Google | execução fora da `main` ou repositório renomeado | publique a partir da `main`; se renomeou, atualize a condição do provider |
 | `Permission denied` em `iam.serviceAccounts.actAs`, `run` ou no envio da imagem | permissão ausente ou ainda propagando | aguarde alguns minutos e rode `bin/setup-gcp` de novo |
 | `Permission denied on secret` | a conta do app não lê o segredo | rode `bin/setup-gcp` de novo |
 | Logs com `Variáveis de ambiente obrigatórias ausentes` | segredo não informado ao serviço | confira `--set-secrets` e os nomes dos segredos |
-| Erro de conexão com o banco (`Cloud SQL`, socket em `/cloudsql`) | instância desligada, conta sem `cloudsql.client` ou `--add-cloudsql-instances` errado | ligue a instância (passo 7) e rode `bin/setup-gcp` de novo |
-| `bin/prod-rails` não conecta | credenciais locais ausentes ou expiradas, ou conta sem acesso ao banco | `gcloud auth application-default login` |
+| Erro de conexão com o banco (`connection refused`, `SSL`, `password authentication failed`) | `DATABASE_URL` errada, senha trocada no Neon ou cota do plano gratuito esgotada | confira no console do Neon e grave a connection string nova com `gcloud secrets versions add DATABASE_URL --data-file=-` |
+| `bin/prod-rails` não conecta | login do `gcloud` expirado ou conta sem acesso ao segredo | `gcloud auth login` |
 | Login não funciona (volta para a tela de login) | `SECRET_KEY_BASE` mudou entre versões | mantenha o mesmo segredo; trocar a chave encerra todas as sessões |
 | `Muitas tentativas` | limite de 10 tentativas em 3 minutos | aguarde alguns minutos |

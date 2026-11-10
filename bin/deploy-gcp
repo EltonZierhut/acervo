@@ -47,13 +47,14 @@ docker push "$IMAGE"
 
 # --max-instances 1: o limite de tentativas de login usa memória local (uma instância só).
 # --min-instances 0: desliga quando não está em uso (sem cobrança parada).
-# A API do Cloud SQL já é ativada pelo bin/setup-gcp; a conta de deploy não precisa checar isso.
+# O banco é o Neon, acessado pela DATABASE_URL. --clear-cloudsql-instances remove a ligação antiga com o
+# Cloud SQL, que o gcloud manteria da revisão anterior.
 CLOUDSDK_CORE_SHOULD_PROMPT_TO_ENABLE_API=false gcloud run deploy "$SERVICE" \
   --project "$PROJECT" \
   --image "$IMAGE" \
   --region "$REGION" \
   --service-account "acervo-runtime@${PROJECT}.iam.gserviceaccount.com" \
-  --add-cloudsql-instances "${PROJECT}:${REGION}:acervo-db" \
+  --clear-cloudsql-instances \
   --allow-unauthenticated \
   --port 8080 \
   --memory 512Mi \
