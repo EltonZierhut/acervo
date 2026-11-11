@@ -28,3 +28,7 @@ export const TargetIcon = () => (
 export const UserIcon = () => (
   <Icon><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7" /></Icon>
 )
+
+export const SproutIcon = () => (
+  <Icon><path d="M12 21v-9" /><path d="M12 12C12 8 9 5 4 5c0 4 3 7 8 7z" /><path d="M12 14c0-3 2.5-5.5 7-5.5 0 3.5-2.5 5.5-7 5.5z" /></Icon>
+)

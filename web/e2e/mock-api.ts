@@ -57,6 +57,44 @@ const study = {
   },
 }
 
+const mentorship = {
+  id: 1, mentor_name: long, topic: long, description: 'Combinados **importantes**', started_on: '2026-01-01', ended_on: null,
+  cadence: 'quinzenal, 1 h', status: 'active', created_at: now, updated_at: now,
+  summary: { goals_open: 2, goals_achieved: 1, action_items_open: 3, last_meeting_on: '2026-01-10' },
+}
+const question = (id: number, answer: string | null) => ({
+  id, mentorship_id: 1, position: id, prompt: long + '?', answer, answered: !!answer, updated_at: now,
+})
+const goal = {
+  id: 1, mentorship_id: 1, title: long, success_criteria: 'Critério com `codigo_muito_longo_sem_espacos_para_quebrar_a_linha`',
+  description: null, target_on: '2026-01-05', status: 'in_progress', progress: 40, overdue: true, action_items: progress,
+  created_at: now, updated_at: now,
+}
+const actionItem = (id: number, done: boolean) => ({
+  id, mentorship_id: 1, meeting_id: 1, goal_id: 1, goal_title: long, meeting_held_on: '2026-01-10', title: long, due_on: '2026-01-02',
+  completed_at: done ? now : null, done, overdue: !done, created_at: now, updated_at: now,
+})
+const meeting = {
+  id: 1, mentorship_id: 1, mentor_name: long, held_on: '2026-01-10', agenda: 'Pauta', notes: 'Anotações', takeaways: long,
+  rating: 4, tags: ['carreira', 'tag-bastante-longa'], action_items: progress, created_at: now, updated_at: now,
+}
+const evolution = (id: number, scores: number[]) => ({
+  id, mentorship_id: 1, name: long, position: id, first: scores[0], last: scores[scores.length - 1],
+  delta: scores.length > 1 ? scores[scores.length - 1] - scores[0] : null,
+  ratings: scores.map((score, i) => ({ rated_on: `2026-0${i + 1}-01`, score, comment: i === scores.length - 1 ? long : null })),
+})
+const assessments = {
+  dates: ['2026-01-01', '2026-02-01', '2026-03-01'],
+  competencies: [evolution(1, [2, 3, 4]), evolution(2, [3, 3, 2]), evolution(3, [])],
+}
+const overview = {
+  questions: { total: 12, answered: 5 },
+  goals: { total: 3, achieved: 1, average_progress: 47 },
+  action_items: { total: 8, done: 5, overdue: 2, next: [actionItem(1, false), actionItem(2, false)] },
+  meetings: { held: 4, last_held_on: '2026-01-10', days_since_last: 12, next_on: '2026-01-24', average_rating: 4.3 },
+  competencies: { total: 3, assessments: 3, average_delta: 0.5 },
+}
+
 function respond(method: string, path: string): { status: number; body?: unknown } {
   if (path === '/session') return method === 'GET' ? { status: 200, body: { user: { id: 1, email_address: 'pessoa@exemplo.com' } } } : { status: 204 }
   if (path === '/codes/snippets') return { status: 200, body: { data: [snippet], meta: page1 } }
@@ -69,6 +107,15 @@ function respond(method: string, path: string): { status: number; body?: unknown
   if (/^\/flashcards\/decks\/\d+\/study$/.test(path)) return { status: 200, body: study }
   if (/^\/flashcards\/notes\/\d+$/.test(path)) return { status: 200, body: flashcardNote }
   if (path === '/initiatives/contexts') return { status: 200, body: [context] }
+  if (path === '/mentoring/mentorships') return { status: 200, body: { data: [mentorship] } }
+  if (/^\/mentoring\/mentorships\/\d+$/.test(path)) return { status: 200, body: mentorship }
+  if (path.endsWith('/overview')) return { status: 200, body: overview }
+  if (/^\/mentoring\/mentorships\/\d+\/questions$/.test(path)) return { status: 200, body: { data: [question(1, '**Resposta** longa ' + long), question(2, null)] } }
+  if (/^\/mentoring\/mentorships\/\d+\/goals$/.test(path)) return { status: 200, body: { data: [goal, { ...goal, id: 2, status: 'achieved', progress: 100, overdue: false }] } }
+  if (/^\/mentoring\/mentorships\/\d+\/meetings$/.test(path)) return { status: 200, body: { data: [meeting], meta: page1 } }
+  if (/^\/mentoring\/meetings\/\d+$/.test(path)) return { status: 200, body: meeting }
+  if (/^\/mentoring\/mentorships\/\d+\/action_items$/.test(path)) return { status: 200, body: { data: [actionItem(1, false), actionItem(2, true)] } }
+  if (/^\/mentoring\/mentorships\/\d+\/assessments$/.test(path)) return { status: 200, body: assessments }
   if (path === '/initiatives/initiatives') return { status: 200, body: { data: [initiative], meta: page1 } }
   if (/^\/initiatives\/initiatives\/\d+$/.test(path)) return { status: 200, body: initiative }
   if (path.endsWith('/milestones')) return { status: 200, body: { data: [milestone] } }

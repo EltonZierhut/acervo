@@ -61,6 +61,23 @@ Rails.application.routes.draw do
         post "cards/:id/review", to: "study#review", as: :card_review
       end
 
+      # Módulo: Mentoria. Os itens são criados e listados dentro da mentoria e alterados pelo próprio id.
+      namespace :mentoring do
+        resources :mentorships, shallow: true do
+          get :overview, on: :member
+          resources :questions, only: %i[index create update destroy] do
+            post :move, on: :member
+          end
+          resources :goals, only: %i[index create update destroy]
+          resources :meetings, only: %i[index create show update destroy]
+          resources :action_items, only: %i[index create update destroy]
+          resources :competencies, only: %i[index create update destroy]
+        end
+        get "mentorships/:mentorship_id/assessments", to: "assessments#show", as: :mentorship_assessments
+        post "mentorships/:mentorship_id/assessments", to: "assessments#create"
+        delete "mentorships/:mentorship_id/assessments/:rated_on", to: "assessments#destroy", as: :mentorship_assessment
+      end
+
       # Próximos módulos entram aqui, cada um no seu namespace.
     end
   end

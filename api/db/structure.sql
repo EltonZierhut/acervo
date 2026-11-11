@@ -623,6 +623,261 @@ ALTER SEQUENCE public.initiatives_tasks_id_seq OWNED BY public.initiatives_tasks
 
 
 --
+-- Name: mentoring_action_items; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_action_items (
+    id bigint NOT NULL,
+    mentorship_id bigint NOT NULL,
+    meeting_id bigint,
+    goal_id bigint,
+    title character varying NOT NULL,
+    due_on date,
+    completed_at timestamp(6) without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: mentoring_action_items_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_action_items_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_action_items_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_action_items_id_seq OWNED BY public.mentoring_action_items.id;
+
+
+--
+-- Name: mentoring_competencies; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_competencies (
+    id bigint NOT NULL,
+    mentorship_id bigint NOT NULL,
+    name character varying NOT NULL,
+    "position" integer NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: mentoring_competencies_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_competencies_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_competencies_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_competencies_id_seq OWNED BY public.mentoring_competencies.id;
+
+
+--
+-- Name: mentoring_goals; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_goals (
+    id bigint NOT NULL,
+    mentorship_id bigint NOT NULL,
+    title character varying NOT NULL,
+    success_criteria text,
+    description text,
+    target_on date,
+    status character varying DEFAULT 'not_started'::character varying NOT NULL,
+    progress integer DEFAULT 0 NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT mentoring_goals_progress_range CHECK (((progress >= 0) AND (progress <= 100))),
+    CONSTRAINT mentoring_goals_status_valid CHECK (((status)::text = ANY ((ARRAY['not_started'::character varying, 'in_progress'::character varying, 'achieved'::character varying, 'dropped'::character varying])::text[])))
+);
+
+
+--
+-- Name: mentoring_goals_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_goals_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_goals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_goals_id_seq OWNED BY public.mentoring_goals.id;
+
+
+--
+-- Name: mentoring_meetings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_meetings (
+    id bigint NOT NULL,
+    mentorship_id bigint NOT NULL,
+    held_on date NOT NULL,
+    agenda text,
+    notes text,
+    takeaways text,
+    rating integer,
+    tags character varying[] DEFAULT '{}'::character varying[] NOT NULL,
+    tags_text text GENERATED ALWAYS AS (public.immutable_array_to_string((tags)::text[], ' '::text)) STORED,
+    searchable tsvector GENERATED ALWAYS AS ((((setweight(to_tsvector('simple'::regconfig, COALESCE(agenda, ''::text)), 'A'::"char") || setweight(to_tsvector('simple'::regconfig, public.immutable_array_to_string((tags)::text[], ' '::text)), 'A'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(takeaways, ''::text)), 'B'::"char")) || setweight(to_tsvector('simple'::regconfig, COALESCE(notes, ''::text)), 'C'::"char"))) STORED,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT mentoring_meetings_rating_range CHECK (((rating >= 1) AND (rating <= 5)))
+);
+
+
+--
+-- Name: mentoring_meetings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_meetings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_meetings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_meetings_id_seq OWNED BY public.mentoring_meetings.id;
+
+
+--
+-- Name: mentoring_mentorships; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_mentorships (
+    id bigint NOT NULL,
+    mentor_name character varying NOT NULL,
+    topic character varying,
+    description text,
+    started_on date NOT NULL,
+    ended_on date,
+    cadence character varying,
+    status character varying DEFAULT 'active'::character varying NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT mentoring_mentorships_status_valid CHECK (((status)::text = ANY ((ARRAY['active'::character varying, 'paused'::character varying, 'finished'::character varying])::text[])))
+);
+
+
+--
+-- Name: mentoring_mentorships_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_mentorships_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_mentorships_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_mentorships_id_seq OWNED BY public.mentoring_mentorships.id;
+
+
+--
+-- Name: mentoring_questions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_questions (
+    id bigint NOT NULL,
+    mentorship_id bigint NOT NULL,
+    "position" integer NOT NULL,
+    prompt text NOT NULL,
+    answer text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: mentoring_questions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_questions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_questions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_questions_id_seq OWNED BY public.mentoring_questions.id;
+
+
+--
+-- Name: mentoring_ratings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.mentoring_ratings (
+    id bigint NOT NULL,
+    competency_id bigint NOT NULL,
+    rated_on date NOT NULL,
+    score integer NOT NULL,
+    comment text,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    CONSTRAINT mentoring_ratings_score_range CHECK (((score >= 1) AND (score <= 5)))
+);
+
+
+--
+-- Name: mentoring_ratings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.mentoring_ratings_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: mentoring_ratings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.mentoring_ratings_id_seq OWNED BY public.mentoring_ratings.id;
+
+
+--
 -- Name: schema_migrations; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -804,6 +1059,55 @@ ALTER TABLE ONLY public.initiatives_tasks ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
+-- Name: mentoring_action_items id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_action_items ALTER COLUMN id SET DEFAULT nextval('public.mentoring_action_items_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_competencies id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_competencies ALTER COLUMN id SET DEFAULT nextval('public.mentoring_competencies_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_goals id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_goals ALTER COLUMN id SET DEFAULT nextval('public.mentoring_goals_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_meetings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_meetings ALTER COLUMN id SET DEFAULT nextval('public.mentoring_meetings_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_mentorships id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_mentorships ALTER COLUMN id SET DEFAULT nextval('public.mentoring_mentorships_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_questions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_questions ALTER COLUMN id SET DEFAULT nextval('public.mentoring_questions_id_seq'::regclass);
+
+
+--
+-- Name: mentoring_ratings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_ratings ALTER COLUMN id SET DEFAULT nextval('public.mentoring_ratings_id_seq'::regclass);
+
+
+--
 -- Name: sessions id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -943,6 +1247,62 @@ ALTER TABLE ONLY public.initiatives_task_links
 
 ALTER TABLE ONLY public.initiatives_tasks
     ADD CONSTRAINT initiatives_tasks_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_action_items mentoring_action_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_action_items
+    ADD CONSTRAINT mentoring_action_items_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_competencies mentoring_competencies_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_competencies
+    ADD CONSTRAINT mentoring_competencies_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_goals mentoring_goals_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_goals
+    ADD CONSTRAINT mentoring_goals_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_meetings mentoring_meetings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_meetings
+    ADD CONSTRAINT mentoring_meetings_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_mentorships mentoring_mentorships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_mentorships
+    ADD CONSTRAINT mentoring_mentorships_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_questions mentoring_questions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_questions
+    ADD CONSTRAINT mentoring_questions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mentoring_ratings mentoring_ratings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_ratings
+    ADD CONSTRAINT mentoring_ratings_pkey PRIMARY KEY (id);
 
 
 --
@@ -1208,6 +1568,69 @@ CREATE INDEX index_initiatives_tasks_on_title_trgm ON public.initiatives_tasks U
 
 
 --
+-- Name: index_mentoring_action_items_on_goal_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_action_items_on_goal_id ON public.mentoring_action_items USING btree (goal_id);
+
+
+--
+-- Name: index_mentoring_action_items_on_meeting_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_action_items_on_meeting_id ON public.mentoring_action_items USING btree (meeting_id);
+
+
+--
+-- Name: index_mentoring_action_items_on_mentorship_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_action_items_on_mentorship_id ON public.mentoring_action_items USING btree (mentorship_id);
+
+
+--
+-- Name: index_mentoring_competencies_on_mentorship_and_lower_name; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mentoring_competencies_on_mentorship_and_lower_name ON public.mentoring_competencies USING btree (mentorship_id, lower((name)::text));
+
+
+--
+-- Name: index_mentoring_goals_on_mentorship_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_goals_on_mentorship_id ON public.mentoring_goals USING btree (mentorship_id);
+
+
+--
+-- Name: index_mentoring_meetings_on_mentorship_id_and_held_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_meetings_on_mentorship_id_and_held_on ON public.mentoring_meetings USING btree (mentorship_id, held_on);
+
+
+--
+-- Name: index_mentoring_meetings_on_searchable; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_meetings_on_searchable ON public.mentoring_meetings USING gin (searchable);
+
+
+--
+-- Name: index_mentoring_questions_on_mentorship_id_and_position; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_mentoring_questions_on_mentorship_id_and_position ON public.mentoring_questions USING btree (mentorship_id, "position");
+
+
+--
+-- Name: index_mentoring_ratings_on_competency_id_and_rated_on; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_mentoring_ratings_on_competency_id_and_rated_on ON public.mentoring_ratings USING btree (competency_id, rated_on);
+
+
+--
 -- Name: index_sessions_on_token; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -1237,6 +1660,14 @@ ALTER TABLE ONLY public.initiatives_tasks
 
 
 --
+-- Name: mentoring_ratings fk_rails_09e1c1acca; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_ratings
+    ADD CONSTRAINT fk_rails_09e1c1acca FOREIGN KEY (competency_id) REFERENCES public.mentoring_competencies(id) ON DELETE CASCADE;
+
+
+--
 -- Name: flashcards_cards fk_rails_0d104d912c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1258,6 +1689,30 @@ ALTER TABLE ONLY public.initiatives_task_links
 
 ALTER TABLE ONLY public.initiatives_milestones
     ADD CONSTRAINT fk_rails_2efaed1aab FOREIGN KEY (initiative_id) REFERENCES public.initiatives_initiatives(id) ON DELETE CASCADE;
+
+
+--
+-- Name: mentoring_questions fk_rails_4a3e04caa7; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_questions
+    ADD CONSTRAINT fk_rails_4a3e04caa7 FOREIGN KEY (mentorship_id) REFERENCES public.mentoring_mentorships(id) ON DELETE CASCADE;
+
+
+--
+-- Name: mentoring_action_items fk_rails_5d0e628187; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_action_items
+    ADD CONSTRAINT fk_rails_5d0e628187 FOREIGN KEY (mentorship_id) REFERENCES public.mentoring_mentorships(id) ON DELETE CASCADE;
+
+
+--
+-- Name: mentoring_goals fk_rails_5dc3d70955; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_goals
+    ADD CONSTRAINT fk_rails_5dc3d70955 FOREIGN KEY (mentorship_id) REFERENCES public.mentoring_mentorships(id) ON DELETE CASCADE;
 
 
 --
@@ -1285,6 +1740,14 @@ ALTER TABLE ONLY public.sessions
 
 
 --
+-- Name: mentoring_competencies fk_rails_7c814dbdab; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_competencies
+    ADD CONSTRAINT fk_rails_7c814dbdab FOREIGN KEY (mentorship_id) REFERENCES public.mentoring_mentorships(id) ON DELETE CASCADE;
+
+
+--
 -- Name: initiatives_task_images fk_rails_a09ff71f8c; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1293,11 +1756,27 @@ ALTER TABLE ONLY public.initiatives_task_images
 
 
 --
+-- Name: mentoring_action_items fk_rails_ab41df4c34; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_action_items
+    ADD CONSTRAINT fk_rails_ab41df4c34 FOREIGN KEY (meeting_id) REFERENCES public.mentoring_meetings(id) ON DELETE SET NULL;
+
+
+--
 -- Name: initiatives_run_questions fk_rails_ababf71257; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.initiatives_run_questions
     ADD CONSTRAINT fk_rails_ababf71257 FOREIGN KEY (run_id) REFERENCES public.initiatives_runs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: mentoring_meetings fk_rails_b1afe29be3; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_meetings
+    ADD CONSTRAINT fk_rails_b1afe29be3 FOREIGN KEY (mentorship_id) REFERENCES public.mentoring_mentorships(id) ON DELETE CASCADE;
 
 
 --
@@ -1317,6 +1796,14 @@ ALTER TABLE ONLY public.flashcards_notes
 
 
 --
+-- Name: mentoring_action_items fk_rails_d184ebd5fe; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.mentoring_action_items
+    ADD CONSTRAINT fk_rails_d184ebd5fe FOREIGN KEY (goal_id) REFERENCES public.mentoring_goals(id) ON DELETE SET NULL;
+
+
+--
 -- Name: initiatives_tasks fk_rails_e855c4fa67; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1331,6 +1818,7 @@ ALTER TABLE ONLY public.initiatives_tasks
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
+('20261111000001'),
 ('20261107000001'),
 ('20261103000001'),
 ('20261102000001'),
