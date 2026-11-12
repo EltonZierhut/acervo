@@ -16,3 +16,7 @@ shared:
       name: Flashcards
       description: Cartões de estudo com repetição espaçada, no estilo do Anki
       enabled: true
+    - key: mentoring
+      name: Mentoria
+      description: Questionário, objetivos, encontros, ações e evolução da mentoria recebida
+      enabled: true

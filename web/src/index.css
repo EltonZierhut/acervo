@@ -262,6 +262,71 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .fc-rate-4 { border-color: var(--accent); }
 .fc-done p { margin: 6px 0; }
 
+/* Mentoria */
+.mt-break { overflow-wrap: anywhere; min-width: 0; }
+.mt-wrap { flex-wrap: wrap; align-items: center; }
+.mt-h2 { font-size: 1.1rem; margin: 28px 0 10px; }
+.mt-edit { max-width: none; margin: 0; }
+.mt-inline-label { display: inline-flex; align-items: center; gap: 6px; }
+.mt-inline-label { min-width: 0; max-width: 100%; }
+.mt-inline-label select, .mt-inline-label input { width: auto; min-width: 0; max-width: 100%; flex: 1 1 auto; }
+.mt-edit label { min-width: 0; }
+.mt-edit select { min-width: 0; max-width: 100%; }
+.mt-action-row .task-meta { min-width: 0; max-width: 100%; }
+.mt-next { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.mt-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.mt-stat { text-align: left; align-items: flex-start; gap: 4px; cursor: pointer; font: inherit; color: var(--text); }
+.mt-stat:hover { border-color: var(--accent); }
+.mt-stat > span { width: 100%; }
+.mt-stat .progress { display: flex; max-width: none; }
+.mt-tabs .tab { flex: 0 0 auto; white-space: nowrap; }
+.mt-stat-title { font-size: .85rem; color: var(--muted); }
+.mt-stat-value { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.mt-questions-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mt-questions-head > div { display: flex; flex-direction: column; gap: 6px; min-width: 200px; flex: 1; }
+.mt-question-list { list-style: none; padding: 0; margin: 14px 0; display: flex; flex-direction: column; gap: 12px; }
+.mt-question { border-left: 3px solid var(--border); }
+.mt-question.answered { border-left-color: var(--accent); }
+.mt-question-top { display: flex; gap: 10px; align-items: flex-start; }
+.mt-question-number { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: .85rem; }
+.mt-question-prompt { margin: 2px 0 0; font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
+.mt-answer { padding-left: 36px; }
+.mt-goal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.mt-goal-title { white-space: normal; text-align: left; font-weight: 600; }
+.mt-goal-achieved { border-left: 3px solid var(--status-active, #0a7a3d); }
+.mt-goal-dropped { opacity: .7; }
+.mt-status-achieved, .mt-mstatus-active { background: var(--status-active-bg); color: var(--status-active); }
+.mt-status-not_started, .mt-status-dropped, .mt-mstatus-paused, .mt-mstatus-finished { background: var(--bg); color: var(--muted); border: 1px solid var(--border); }
+.mt-criteria { border-left: 2px solid var(--border); padding-left: 10px; }
+.mt-mentorship-card { gap: 6px; }
+.mt-actions { display: flex; flex-direction: column; gap: 10px; }
+.mt-action-add { gap: 10px; }
+.mt-action-add-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.mt-action-add-row .btn.primary { margin-left: auto; }
+.mt-action-row { flex-wrap: wrap; }
+.mt-action-title { white-space: normal; }
+.mt-chip-clip { max-width: 180px; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; padding: 2px 8px; font-size: .8rem; }
+.mt-segmented { flex-wrap: wrap; }
+.mt-score { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.mt-score-btn { width: 40px; height: 40px; padding: 0; border-radius: 50%; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mt-score-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.mt-assessment { display: flex; flex-direction: column; gap: 12px; }
+.mt-assessment > .btn { align-self: flex-start; }
+.mt-assessment-form { max-width: 760px; }
+.mt-rate { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; margin: 0; min-width: 0; }
+.mt-rate legend { font-weight: 600; padding: 0 4px; overflow-wrap: anywhere; }
+.mt-evolution { gap: 6px; }
+.mt-delta { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--muted); }
+.mt-delta.up { color: #0a7a3d; }
+.mt-delta.down { color: var(--danger); }
+.mt-bars { display: flex; gap: 4px; align-items: flex-end; height: 82px; padding-bottom: 18px; overflow-x: auto; overflow-y: hidden; }
+.mt-bar { position: relative; flex: 0 0 22px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; background: var(--accent-soft); border-radius: 4px; }
+.mt-bar-fill { display: block; background: var(--accent); border-radius: 4px; }
+.mt-bar-value { position: absolute; bottom: -17px; left: 0; right: 0; text-align: center; font-size: .75rem; color: var(--muted); }
+.mt-dates summary { cursor: pointer; color: var(--muted); font-size: .9rem; margin: 8px 0; }
+.mt-competencies li { align-items: center; flex-wrap: wrap; }
+.mt-suggestions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
 @media (max-width: 720px) {
   :root { --touch: 44px; --bottom-bar: calc(60px + env(safe-area-inset-bottom)); }
 
@@ -377,6 +442,19 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
   .fc-face { min-height: 180px; }
   .fc-rate { min-height: 60px; }
   .fc-hint { display: none; }
+
+  /* Mentoria */
+  .mt-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .mt-stat { padding: 12px; }
+  .mt-stat-value { font-size: 1.3rem; }
+  .mt-answer { padding-left: 0; }
+  .mt-score-btn { width: var(--touch); height: var(--touch); }
+  .mt-action-add-row .btn.primary { margin-left: 0; flex: 1 1 100%; }
+  .mt-action-row .task-meta { padding-left: 38px; }
+  .mt-goal-head { flex-wrap: wrap; }
+  .mt-chip-clip { display: inline-block; max-width: 100%; min-width: 0; white-space: nowrap; line-height: 1.6; }
+  .mt-action-row input[type=checkbox] { margin: 10px; }
+  .mt-next .btn { flex: 1 1 100%; }
 }
 
 /* Iniciativas: anexos e execução por IA */
